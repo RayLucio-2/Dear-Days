@@ -1,0 +1,15 @@
+# Site do Dear Days na Netlify (versão web do mesmo app).
+# Em Site configuration > Environment variables, cadastre:
+#   EXPO_PUBLIC_SUPABASE_URL e EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+[build]
+  command = "npx expo export --platform web"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Todas as páginas (/dia, /mes, /ferramenta/roda...) abrem o app.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
