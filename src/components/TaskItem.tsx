@@ -4,6 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useStore } from '@/lib/store';
 import { CATN, CATS, CATSTRONG, ENERGIA, ENERGIA_ICON, Sub, Task } from '@/lib/planner';
 import { moveTask, success, tap, tomorrowOf } from '@/lib/actions';
+import { openGcal } from '@/lib/gcal';
 import { Check, DocCheck, Field, IconBtn, Row, T } from './ui';
 import { C, F, R } from '@/lib/theme';
 
@@ -145,6 +146,12 @@ export function TaskItem({ id, i, t, strong, onRepeat, startOpen }: { id: string
           <Row style={{ justifyContent: 'space-between', marginTop: 6, flexWrap: 'wrap' }}>
             <Pressable onPress={() => moveTask(day, i, tomorrowOf(day))} style={st.action} accessibilityRole="button"><Ionicons name="arrow-forward-circle-outline" size={16} color={C.accent} /><Text style={[st.actionT, { color: C.accent }]}>Amanhã</Text></Pressable>
             <Pressable onPress={onRepeat} style={st.action} accessibilityRole="button"><Ionicons name="repeat" size={16} color={C.accent} /><Text style={[st.actionT, { color: C.accent }]}>Repetir todo dia</Text></Pressable>
+            {t.t ? (
+              <Pressable onPress={() => openGcal({ title: String(t.t), day, start: t.time, end: t.end, details: [t.first ? `Primeiro passo: ${t.first}` : '', t.desc || ''].filter(Boolean).join('\n') })}
+                style={st.action} accessibilityRole="link" accessibilityLabel="Adicionar ao Google Agenda">
+                <Ionicons name="calendar-outline" size={16} color={C.accent} /><Text style={[st.actionT, { color: C.accent }]}>Google Agenda</Text>
+              </Pressable>
+            ) : null}
             <Pressable onPress={() => remove(id, 'tl', i)} style={st.action} accessibilityRole="button"><Ionicons name="trash-outline" size={16} color={C.muted} /><Text style={[st.actionT, { color: C.muted }]}>Apagar</Text></Pressable>
           </Row>
         </View>

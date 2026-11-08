@@ -11,6 +11,7 @@ import { DayNav } from '@/components/DayNav';
 import { EnergyPicker, Focus } from '@/components/Focus';
 import { Routine } from '@/components/Routine';
 import { moveAll, pendingIdx } from '@/lib/actions';
+import { CalEvent, downloadIcs } from '@/lib/gcal';
 import Svg, { Circle } from 'react-native-svg';
 import { TaskItem } from '@/components/TaskItem';
 import { Cup, Face } from '@/components/art';
@@ -287,6 +288,16 @@ function Tasks({ id, d, strong }: { id: string; d: Date; strong: string }) {
     if (t.ok) set(id, `rd.${r.id}`, true);
     remove(id, 'tl', i);
   }
+  /** Baixa um .ics com as tarefas do dia (abre no Google Agenda, Agenda do iPhone ou Outlook). */
+  function exportDay() {
+    const day = id.slice(2);
+    const evs: CalEvent[] = [];
+    items.forEach((x) => {
+      if (x.kind === 'task' && String(x.task.t || '').trim()) evs.push({ title: String(x.task.t), day, start: x.task.time, end: x.task.end, details: x.task.desc });
+      else if (x.kind === 'rule' && x.r.t) evs.push({ title: x.r.t, day, start: x.r.time, end: x.r.end, details: x.r.desc });
+    });
+    if (evs.length) downloadIcs(evs, `dear-days-${day}.ics`);
+  }
   function add() {
     setFresh(tl.length);
     push(id, 'tl', { time: '', end: '', t: '', desc: '', cat: 0, ok: false, sub: [] });
@@ -315,9 +326,12 @@ function Tasks({ id, d, strong }: { id: string; d: Date; strong: string }) {
           </View>
         ) : null,
       )}
-      <Row style={{ justifyContent: 'space-between', marginTop: 6 }}>
+      <Row style={{ justifyContent: 'space-between', marginTop: 6, flexWrap: 'wrap', rowGap: 4 }}>
         <Btn title="Adicionar tarefa" icon="add" color={strong} onPress={add} />
-        <Btn kind="link" title="Tarefas fixas" icon="repeat" color={C.accent} onPress={() => router.navigate('/rotina')} />
+        <Row style={{ gap: 14 }}>
+          <Btn kind="link" title="Agenda" icon="calendar-outline" color={C.accent} onPress={exportDay} />
+          <Btn kind="link" title="Tarefas fixas" icon="repeat" color={C.accent} onPress={() => router.navigate('/rotina')} />
+        </Row>
       </Row>
       {skipped ? (
         <Btn kind="link" color={C.accent} title={`Mostrar ${skipped} tarefa${skipped > 1 ? 's' : ''} fixa${skipped > 1 ? 's' : ''} pulada${skipped > 1 ? 's' : ''} hoje`} onPress={() => set(id, 'rs', {})} />

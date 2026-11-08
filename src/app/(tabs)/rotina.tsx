@@ -1,10 +1,20 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useStore } from '@/lib/store';
-import { DIAS, fromKey, key, today } from '@/lib/dates';
+import { addDays, DIAS, fromKey, key, today } from '@/lib/dates';
+import { openGcal } from '@/lib/gcal';
 import { CATN, CATS, CATSTRONG, monthColor, Rule, uid } from '@/lib/planner';
 import { useWide } from '@/lib/layout';
+
 import { Btn, Field, H1, IconBtn, Row, Screen, T } from '@/components/ui';
 import { C, F, R } from '@/lib/theme';
+
+/** Primeiro dia (a partir de hoje ou do início da tarefa) que cai num dos dias escolhidos. */
+function nextOn(days: number[], from?: string) {
+  let d = today();
+  if (from && fromKey(from) > d) d = fromKey(from);
+  for (let i = 0; i < 7; i++) { const x = addDays(d, i); if (days.includes(x.getDay())) return key(x); }
+  return key(d);
+}
 
 const PRE: [string, number[]][] = [['Todo dia', [0, 1, 2, 3, 4, 5, 6]], ['Seg a sex', [1, 2, 3, 4, 5]], ['Fim de semana', [0, 6]]];
 
@@ -60,6 +70,10 @@ export default function Rotina() {
               </View>
               <Row style={{ gap: 14, flexWrap: 'wrap' }}>
                 {PRE.map(([l, ds]) => <Btn key={l} kind="link" title={l} color={C.accent} onPress={() => set('t-rot', `r.${i}.days`, ds)} />)}
+                {r.t && days.length ? (
+                  <Btn kind="link" title="Google Agenda" icon="calendar-outline" color={C.accent}
+                    onPress={() => openGcal({ title: r.t, day: nextOn(days, r.from), start: r.time, end: r.end, details: r.desc, weekdays: days })} />
+                ) : null}
               </Row>
               <T muted small>Aparece a partir de {r.from ? fromKey(r.from).toLocaleDateString('pt-BR') : 'hoje'}{days.length ? '' : '. Escolha pelo menos um dia.'}</T>
             </View>

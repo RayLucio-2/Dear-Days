@@ -8,8 +8,13 @@ if (Platform.OS !== 'web') {
   require('expo-sqlite/localStorage/install');
 }
 
-const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
-const anon = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? '';
+// Projeto Supabase do Dear Days. A chave "publishable" é pública (feita para ficar no site e no app);
+// a segurança dos dados vem das regras (RLS) da tabela. Pode trocar pelo .env ou pelas variáveis da Netlify.
+const DEFAULT_URL = 'https://fjpqwwqkewkqlhxwbeau.supabase.co';
+const DEFAULT_KEY = 'sb_publishable_wm_9gdf2WUn_ckcKjkex9w_xw5oEDoj';
+
+const url = process.env.EXPO_PUBLIC_SUPABASE_URL || DEFAULT_URL;
+const anon = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY || DEFAULT_KEY;
 
 export const supabaseReady = !!url && !!anon;
 

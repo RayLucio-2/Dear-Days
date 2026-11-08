@@ -34,6 +34,7 @@ No computador (tela larga) o site mostra o menu na lateral e as páginas em duas
 | Tarefas fixas | criar, escolher dias e cor |
 | Ferramentas | Prefácio, Pilares, Roda da vida, Metas para 5 anos, Plano de vida, Do sentir à ação, Hobbies, Top 3 de sonhos, Diário de leituras, Memórias, Reflexão semestral, Carta para o eu do futuro, Notas rápidas, Escrita terapêutica |
 | Personalizar (em Mais) | cor do planner, abas e ordem, blocos do Início, atalhos e a tela que abre primeiro (Início, Dia ou Modo foco). Fica em `t-cfg` e vale no site e no app |
+| Google Agenda | botão em cada tarefa (abre o evento já preenchido), tarefas fixas entram como evento que se repete, e "Agenda" no Dia baixa um arquivo .ics com o dia inteiro (Google, iPhone ou Outlook) |
 | Conta | senha, avisos, baixar e importar cópia, sair |
 
 Tudo salva sozinho: primeiro no aparelho (funciona sem internet) e depois no Supabase.
