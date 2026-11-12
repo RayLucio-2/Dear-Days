@@ -7,6 +7,7 @@ import { useStore } from '@/lib/store';
 import { C, F } from '@/lib/theme';
 import { useWide } from '@/lib/layout';
 import { DEF_TABS, listOf, MOBILE_TABS, TAB_VIEWS } from '@/lib/prefs';
+import { useAcesso, useAssinatura } from '@/lib/assinatura';
 import { QuickCapture } from '@/components/QuickCapture';
 import { syncNotifications } from '@/lib/notify';
 
@@ -34,6 +35,8 @@ export default function TabsLayout() {
   const ready = useStore((s) => s.ready);
   const docs = useStore((s) => s.docs);
   const wide = useWide();
+  const acesso = useAcesso();
+  const subOk = useAssinatura((s) => s.carregado);
   const cfg = docs['t-cfg'];
   const path = usePathname();
   // Tela que abre primeiro (Personalizar > Abrir o app em)
@@ -57,6 +60,8 @@ export default function TabsLayout() {
   const chosen = listOf(cfg, 'tabs', DEF_TABS).filter((v) => valid.includes(v));
   const shown = wide ? chosen : chosen.slice(0, MOBILE_TABS);
   if (!signed) return <Redirect href="/login" />;
+  // Teste grátis acabou e não há assinatura: vai para a tela de assinar (os dados continuam guardados)
+  if (subOk && !acesso.liberado) return <Redirect href="/assinatura" />;
   if (!ready) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: C.bg }}>

@@ -31,6 +31,7 @@ export default function RootLayout() {
         <Stack.Screen name="conta" options={{ presentation: 'modal' }} />
         <Stack.Screen name="caixa" options={{ presentation: 'modal' }} />
         <Stack.Screen name="revisao" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="assinatura" options={{ presentation: 'modal' }} />
       </Stack>
     </SafeAreaProvider>
   );

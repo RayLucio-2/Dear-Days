@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import type { Session } from '@supabase/supabase-js';
 import { supabase, supabaseReady } from './supabase';
 import { useStore } from './store';
+import { useAssinatura } from './assinatura';
 
 type Auth = {
   loading: boolean;
@@ -33,14 +34,14 @@ export const useAuth = create<Auth>((set, get) => ({
     }
     supabase.auth.getSession().then(({ data }) => {
       set({ session: data.session, email: data.session?.user.email ?? null, loading: false });
-      if (data.session) useStore.getState().init(data.session.user.id);
+      if (data.session) { useStore.getState().init(data.session.user.id); useAssinatura.getState().carregar(data.session.user.id); }
     });
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       // veio do link de "esqueci a senha": abre a Conta para criar a nova senha
       if (event === 'PASSWORD_RECOVERY') setTimeout(() => router.push('/conta'), 300);
       set({ session, email: session?.user.email ?? null });
-      if (session) useStore.getState().init(session.user.id);
-      else if (!get().local) useStore.getState().reset();
+      if (session) { useStore.getState().init(session.user.id); useAssinatura.getState().carregar(session.user.id); }
+      else if (!get().local) { useStore.getState().reset(); useAssinatura.getState().limpar(); }
     });
     return () => data.subscription.unsubscribe();
   },
@@ -49,6 +50,7 @@ export const useAuth = create<Auth>((set, get) => ({
     writeLocal(true);
     set({ local: true, email: 'neste aparelho' });
     useStore.getState().init('local');
+    useAssinatura.getState().carregar('local');
   },
 
   async signOut() {

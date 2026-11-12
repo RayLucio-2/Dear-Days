@@ -128,6 +128,70 @@ O planner que está no Claude não consegue falar com o Supabase, então ele nã
 2. No site novo ou no app: **Conta > Escolher arquivo de cópia**.
 3. Pronto: tudo aparece no site e no celular.
 
+## 8. Assinatura (Asaas, Pix e cartão)
+
+Cada pessoa nova ganha **7 dias grátis**. Depois disso, o app mostra a tela **Assinatura** e só libera de novo quando o pagamento é confirmado. Os dados nunca são apagados.
+
+Preços: **R$ 14,90/mês** e **R$ 119,90/ano**. Para mudar, troque em dois lugares: `src/lib/assinatura.ts` (o que aparece no app) e os segredos `PRECO_MENSAL` / `PRECO_ANUAL` do Supabase (o que é cobrado).
+
+Como funciona: o app chama uma função do Supabase, ela cria a assinatura no Asaas e abre a página de pagamento do próprio Asaas. Quando a pessoa paga, o Asaas avisa o Supabase (webhook) e o acesso libera sozinho. **A chave do Asaas fica só no Supabase**, nunca no app, no site ou no Git.
+
+### 8.1 Criar as tabelas
+Supabase > **SQL Editor** > New query > cole o conteúdo de `supabase/assinatura.sql` > **Run**.
+Quem já tem conta ganha 7 dias de teste a partir de agora.
+
+### 8.2 Instalar a ferramenta do Supabase e entrar
+No terminal, dentro da pasta do projeto:
+```
+npx supabase login
+npx supabase link --project-ref fjpqwwqkewkqlhxwbeau
+```
+(o `login` abre o navegador; o `link` pede a senha do banco, a mesma de quando você criou o projeto)
+
+### 8.3 Guardar os segredos
+Invente uma senha longa para o webhook (por exemplo 30 letras e números misturados). Depois rode, trocando os valores **no seu terminal** (não mande a chave para ninguém):
+```
+npx supabase secrets set ASAAS_ENV=sandbox ASAAS_API_KEY='COLE_A_CHAVE_DO_ASAAS' ASAAS_WEBHOOK_TOKEN='SUA_SENHA_DO_WEBHOOK'
+```
+Use aspas simples, porque a chave do Asaas começa com `$`.
+Para mudar o preço (opcional): `npx supabase secrets set PRECO_MENSAL=14.90 PRECO_ANUAL=119.90`
+
+### 8.4 Publicar as funções
+```
+npx supabase functions deploy assinar
+npx supabase functions deploy cancelar
+npx supabase functions deploy asaas-webhook --no-verify-jwt
+```
+
+### 8.5 Ligar o webhook no Asaas
+Asaas > **Integrações > Webhooks** > Adicionar:
+- **URL:** `https://fjpqwwqkewkqlhxwbeau.supabase.co/functions/v1/asaas-webhook`
+- **Token de autenticação:** a mesma senha do `ASAAS_WEBHOOK_TOKEN`
+- **Versão da API:** v3, **Tipo de envio:** sequencial, **Ativo:** sim
+- **Eventos:** Cobrança confirmada, Cobrança recebida, Cobrança vencida, Cobrança estornada, Chargeback solicitado, Assinatura removida, Assinatura inativada
+  (nomes técnicos: `PAYMENT_CONFIRMED`, `PAYMENT_RECEIVED`, `PAYMENT_OVERDUE`, `PAYMENT_REFUNDED`, `PAYMENT_CHARGEBACK_REQUESTED`, `SUBSCRIPTION_DELETED`, `SUBSCRIPTION_INACTIVATED`)
+
+### 8.6 Testar no sandbox
+1. Entre no site com uma conta de teste > **Conta > Assinatura > Ver planos e assinar**.
+2. Use um CPF de teste válido (por exemplo um gerado em geradores de CPF) e escolha Pix ou cartão.
+3. Na página do Asaas:
+   - **Cartão:** número `4444 4444 4444 4444`, validade futura, CVV `123`.
+   - **Pix:** no painel do sandbox, abra a cobrança e use **Confirmar pagamento** (no sandbox ninguém paga de verdade).
+4. Volte ao Dear Days: em alguns segundos aparece **Assinatura ativa**. Se não aparecer, toque em **Já paguei, atualizar**.
+5. Se der erro: Supabase > **Edge Functions > asaas-webhook > Logs**, e no Asaas a fila do webhook mostra o que foi enviado.
+
+Para testar o bloqueio sem esperar 7 dias, no SQL Editor:
+`update subscriptions set trial_ends_at = now() - interval '1 day' where status = 'trial';`
+
+### 8.7 Quando for vender de verdade
+1. Gere a chave de **produção** no Asaas (conta aprovada).
+2. `npx supabase secrets set ASAAS_ENV=producao ASAAS_API_KEY='CHAVE_DE_PRODUCAO'`
+3. Crie o mesmo webhook no Asaas de produção.
+4. A chave de sandbox que você criou vence em **14/11/2026**. Se ainda for testar depois disso, gere outra e rode o `secrets set` de novo.
+
+### 8.8 Bloqueio também no servidor (opcional)
+O bloqueio é feito no app. Se quiser que o banco também recuse salvar para quem não assinou, rode as políticas comentadas no fim de `supabase/assinatura.sql`.
+
 ## Comandos úteis
 
 | Comando | Para quê |

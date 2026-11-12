@@ -10,6 +10,7 @@ import { useStore } from '@/lib/store';
 import { Btn, Card, IconBtn, Row, Screen, T, s as ui } from '@/components/ui';
 import { C, F } from '@/lib/theme';
 import { askPermission, avisosOf } from '@/lib/notify';
+import { useAcesso, useAssinatura } from '@/lib/assinatura';
 
 export default function Conta() {
   const email = useAuth((a) => a.email);
@@ -75,6 +76,7 @@ export default function Conta() {
         <T muted small style={{ marginTop: 4 }}>{count} páginas com dados{local ? ', guardadas só neste aparelho' : ', sincronizadas com o site'}</T>
       </Card>
 
+      {!local ? <AssinaturaCard /> : null}
       {!local ? <Senha /> : null}
       <Avisos />
 
@@ -132,6 +134,26 @@ function Avisos() {
         </Row>
       ))}
       {msg ? <T style={{ marginTop: 8 }}>{msg}</T> : null}
+    </Card>
+  );
+}
+
+function AssinaturaCard() {
+  const ac = useAcesso();
+  const plan = useAssinatura((s) => s.sub?.plan);
+  const ate = ac.ate ? ac.ate.toLocaleDateString('pt-BR') : '';
+  const linha = {
+    teste: `Teste grátis até ${ate}`,
+    ativa: `Plano ${plan === 'anual' ? 'anual' : 'mensal'}, renova em ${ate}`,
+    atrasada: 'Pagamento pendente',
+    cancelada: `Cancelada, você usa até ${ate}`,
+    expirada: 'Teste grátis encerrado',
+    desconhecida: 'Ainda carregando',
+  }[ac.fase];
+  return (
+    <Card title="Assinatura">
+      <T>{linha}</T>
+      <Btn kind="link" title={ac.fase === 'ativa' ? 'Ver ou mudar o plano' : 'Ver planos e assinar'} icon="card-outline" color={C.accent} onPress={() => router.push('/assinatura')} style={{ alignSelf: 'flex-start', marginTop: 6 }} />
     </Card>
   );
 }

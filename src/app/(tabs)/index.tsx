@@ -12,6 +12,7 @@ import { Face } from '@/components/art';
 import { C, F, R } from '@/lib/theme';
 import { DEF_FAV, DEF_HOME, FAV_VIEWS, hrefOf, listOf } from '@/lib/prefs';
 import { TOOLS } from '@/lib/tools';
+import { useAcesso } from '@/lib/assinatura';
 
 const FCOL = ['#E7DCCF', '#E5D5D3', '#DDE3D3', '#DCE0E8', '#EADFC9', '#E2D8E6'];
 
@@ -218,6 +219,7 @@ export default function Inicio() {
         <IconBtn icon="person-circle-outline" label={`Conta ${email ?? ''}`} onPress={() => router.push('/conta')} size={28} color={C.ink} />
       </View>
 
+      <AvisoAssinatura />
       {order.map((k) => <View key={k}>{B[k]()}</View>)}
     </Screen>
   );
@@ -253,3 +255,21 @@ const st = StyleSheet.create({
   moodBar: { flexDirection: 'row', height: 12, borderRadius: 6, overflow: 'hidden' },
   money: { fontFamily: F.title, fontSize: 32, color: C.ink },
 });
+
+/** Lembrete gentil: só aparece nos últimos 3 dias do teste ou com pagamento pendente. */
+function AvisoAssinatura() {
+  const ac = useAcesso();
+  const show = (ac.fase === 'teste' && (ac.dias ?? 99) <= 3) || ac.fase === 'atrasada';
+  if (!show) return null;
+  const txt = ac.fase === 'teste'
+    ? `Seu teste grátis termina em ${ac.dias} dia${ac.dias === 1 ? '' : 's'}. Seus dados ficam guardados de qualquer jeito.`
+    : 'Ainda não recebemos o último pagamento. Sem pressa, você tem alguns dias.';
+  return (
+    <Pressable onPress={() => router.push('/assinatura')} accessibilityRole="button"
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: C.sand, borderRadius: R.lg, padding: 16, marginBottom: 14 }}>
+      <Ionicons name="sparkles-outline" size={20} color={C.accent} />
+      <Text style={{ flex: 1, fontFamily: F.body, fontSize: 14, color: C.ink, lineHeight: 20 }}>{txt}</Text>
+      <Text style={{ fontFamily: F.bodyMed, fontSize: 14, color: C.accent }}>Ver planos</Text>
+    </Pressable>
+  );
+}
