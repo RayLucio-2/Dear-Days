@@ -9,12 +9,13 @@ import { brl } from '@/lib/money';
 import { CATSTRONG, MOODC, MOODN, Task, dayInfo, finSums, habits, monthColor, rulesFor } from '@/lib/planner';
 import { Card, IconBtn, Row, Screen, T, s as ui } from '@/components/ui';
 import { Face } from '@/components/art';
-import { C, F, R } from '@/lib/theme';
+import { C, F, R, soft } from '@/lib/theme';
 import { DEF_FAV, DEF_HOME, FAV_VIEWS, hrefOf, listOf } from '@/lib/prefs';
 import { TOOLS } from '@/lib/tools';
 import { useAcesso } from '@/lib/assinatura';
+import { Potinho } from '@/components/Potinho';
 
-const FCOL = ['#E7DCCF', '#E5D5D3', '#DDE3D3', '#DCE0E8', '#EADFC9', '#E2D8E6'];
+const FCOL = ['#E7DCCF', '#E5D5D3', '#DDE3D3', '#DCE0E8', '#EADFC9', '#E2D8E6'].map(soft);
 
 /** Cartões grandes escolhidos em Personalizar > Atalhos. */
 function Atalhos({ strong, soft }: { strong: string; soft: string }) {
@@ -187,6 +188,7 @@ export default function Inicio() {
         <T muted small>entradas {brl(fin.inc)} · saídas {brl(fin.out)}</T>
       </Card>
       </>),
+    potinho: () => <Potinho strong={strong} />,
     atalhos: () => <Atalhos strong={strong} soft={soft} />,
     emocoes: () => <EmocoesMes />,
     ferramentas: () => (

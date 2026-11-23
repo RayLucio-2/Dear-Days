@@ -101,7 +101,7 @@ export function Field({ doc, path, style, time, ...p }: { doc: string; path: str
       onChangeText={(t) => { const v = time ? formatTime(t) : t; setTxt(v); set(doc, path, v); }}
       onFocus={() => { setTxt(stored); setFocus(true); }}
       onBlur={() => setFocus(false)}
-      placeholderTextColor="#B8AEA4"
+      placeholderTextColor={C.placeholder}
       style={[s.input, p.multiline && s.multi, style]}
       {...p}
     />
@@ -192,7 +192,7 @@ export const s = StyleSheet.create({
   num: { fontVariant: ['tabular-nums'] },
   // cartões sem borda nem sombra: só o branco sobre o creme
   card: { backgroundColor: C.surface, borderRadius: R.lg, padding: 20, marginBottom: 14 },
-  cardClosed: { paddingVertical: 16, backgroundColor: 'rgba(255,255,255,0.7)' },
+  cardClosed: { paddingVertical: 16, backgroundColor: C.glass },
   foldHead: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 30 },
   foldIcon: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   foldSum: { fontFamily: F.body, fontSize: 13, color: C.muted, marginTop: 2 },
@@ -201,7 +201,7 @@ export const s = StyleSheet.create({
   sectionLine: { flex: 1, height: 1, backgroundColor: C.hair },
   cardHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
   input: { fontFamily: F.body, fontSize: 15, color: C.ink, borderBottomWidth: 1, borderBottomColor: C.hair, paddingVertical: 9, minHeight: 42, flex: 1 },
-  multi: { minHeight: 84, textAlignVertical: 'top', borderWidth: 0, borderRadius: R.md, padding: 12, backgroundColor: '#FAF6F0', lineHeight: 22 },
+  multi: { minHeight: 84, textAlignVertical: 'top', borderWidth: 0, borderRadius: R.md, padding: 12, backgroundColor: C.field, lineHeight: 22 },
   check: { width: 22, height: 22, borderRadius: 7, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   btn: { flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center', borderRadius: 999, paddingHorizontal: 18, minHeight: 42 },
   btnT: { fontFamily: F.bodyMed, fontSize: 14 },

@@ -9,7 +9,7 @@ import { AREAS, promptOf, semestres, toolOf } from '@/lib/tools';
 import { useWide } from '@/lib/layout';
 import { Btn, Card, Field, IconBtn, Row, Screen, T, s as ui } from '@/components/ui';
 import { Radar } from '@/components/charts';
-import { C, F, R } from '@/lib/theme';
+import { C, F, R, soft } from '@/lib/theme';
 
 /**
  * Todas as ferramentas do planner web, com os mesmos docs:
@@ -230,7 +230,7 @@ function Leituras({ strong }: P) {
   const wide = useWide();
   const fmt = (x: string) => (x ? x.split('-').reverse().join('/') : '');
   const inp = (k: keyof typeof f, ph: string, multi = false) => (
-    <TextInput value={f[k]} onChangeText={(v) => setF({ ...f, [k]: v })} placeholder={ph} placeholderTextColor="#A39A90" multiline={multi} style={[st.inp, multi && { minHeight: 80, textAlignVertical: 'top' }]} accessibilityLabel={ph} />
+    <TextInput value={f[k]} onChangeText={(v) => setF({ ...f, [k]: v })} placeholder={ph} placeholderTextColor={C.placeholder} multiline={multi} style={[st.inp, multi && { minHeight: 80, textAlignVertical: 'top' }]} accessibilityLabel={ph} />
   );
   return (
     <Cols>
@@ -279,7 +279,7 @@ function Memorias() {
     <Cols>
       {months.map((d) => (
         <Half key={mkey(d)} title={`${MESES[d.getMonth()]} ${d.getFullYear()}`}>
-          <View style={[st.bar, { backgroundColor: COR[d.getMonth()][0] }]} />
+          <View style={[st.bar, { backgroundColor: soft(COR[d.getMonth()][0]) }]} />
           <Field doc={id} path={mkey(d)} multiline placeholder="Momentos, pessoas, conquistas" />
         </Half>
       ))}
@@ -332,7 +332,7 @@ function Notas({ strong }: P) {
   return (
     <>
       <Card title="Nova nota">
-        <TextInput value={txt} onChangeText={setTxt} multiline placeholder="Escreva aqui" placeholderTextColor="#A39A90" style={[st.inp, { minHeight: 80, textAlignVertical: 'top' }]} />
+        <TextInput value={txt} onChangeText={setTxt} multiline placeholder="Escreva aqui" placeholderTextColor={C.placeholder} style={[st.inp, { minHeight: 80, textAlignVertical: 'top' }]} />
         <Btn title="Adicionar nota" color={strong} style={{ alignSelf: 'flex-start', marginTop: 10 }}
           onPress={() => { if (!txt.trim()) return; push(id, 'l', { d: new Date().toLocaleDateString('pt-BR'), t: txt.trim() }); setTxt(''); }} />
       </Card>

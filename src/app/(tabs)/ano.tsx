@@ -6,7 +6,7 @@ import { COR, monthColor } from '@/lib/planner';
 import { AREAS } from '@/lib/tools';
 import { useWide } from '@/lib/layout';
 import { Btn, Card, Field, IconBtn, Row, Screen, T, s as ui } from '@/components/ui';
-import { C, F, R } from '@/lib/theme';
+import { C, F, R, soft } from '@/lib/theme';
 
 /** Plano do ano (y-AAAA): palavra, como quer se sentir, as 10 áreas e as metas de cada mês. */
 export default function Ano() {
@@ -60,7 +60,7 @@ export default function Ano() {
           const gs = [0, 1, 2].map((i) => docs['m-' + mkey(md)]?.metas?.[i]?.t).filter(Boolean);
           return (
             <Pressable key={mm} onPress={() => { setCur(key(md)); router.navigate('/mes'); }} accessibilityRole="button"
-              style={[st.month, { width: wide ? '32%' : '48%', backgroundColor: COR[mm][0] }]}>
+              style={[st.month, { width: wide ? '32%' : '48%', backgroundColor: soft(COR[mm][0]) }]}>
               <Text style={st.mN}>{MESES[mm]}</Text>
               <Text style={st.mG} numberOfLines={4}>{gs.length ? gs.join('\n') : 'Sem metas ainda'}</Text>
             </Pressable>

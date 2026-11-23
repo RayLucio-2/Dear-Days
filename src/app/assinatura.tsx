@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth';
 import { useStore } from '@/lib/store';
 import { today } from '@/lib/dates';
 import { monthColor } from '@/lib/planner';
-import { assinar, brlPlano, cancelar, cpfValido, Forma, mascaraCpf, Plano, PLANOS, useAcesso, useAssinatura } from '@/lib/assinatura';
+import { assinar, brlPlano, cancelar, cpfValido, ehCortesia, Forma, mascaraCpf, Plano, PLANOS, useAcesso, useAssinatura } from '@/lib/assinatura';
 import { Btn, Card, IconBtn, Row, Screen, T, s as ui } from '@/components/ui';
 import { C, F, R } from '@/lib/theme';
 
@@ -26,6 +26,7 @@ export default function Assinatura() {
   const [busy, setBusy] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const temAssinatura = !!sub?.asaas_subscription_id;
+  const cortesia = ehCortesia(sub);
   const economia = Math.round((1 - PLANOS.anual.valor / (PLANOS.mensal.valor * 12)) * 100);
 
   async function ir() {
@@ -62,7 +63,7 @@ export default function Assinatura() {
 
   const titulo = {
     teste: `Seu teste grátis: ${ac.dias} dia${ac.dias === 1 ? '' : 's'}`,
-    ativa: 'Assinatura ativa',
+    ativa: cortesia ? 'Acesso gratuito' : 'Assinatura ativa',
     atrasada: 'Pagamento pendente',
     cancelada: 'Assinatura cancelada',
     expirada: 'Seu teste grátis acabou',
@@ -70,7 +71,7 @@ export default function Assinatura() {
   }[ac.fase];
   const sub2 = {
     teste: `Use tudo até ${dataBR(ac.ate)}. Se assinar agora, a primeira cobrança só vem depois disso.`,
-    ativa: `Plano ${sub?.plan === 'anual' ? 'anual' : 'mensal'}${sub?.billing_type === 'CREDIT_CARD' ? ', no cartão' : ', no Pix'}. Próxima renovação em ${dataBR(ac.ate)}.`,
+    ativa: cortesia ? 'Sua conta tem acesso liberado para sempre, sem cobrança.' : `Plano ${sub?.plan === 'anual' ? 'anual' : 'mensal'}${sub?.billing_type === 'CREDIT_CARD' ? ', no cartão' : ', no Pix'}. Próxima renovação em ${dataBR(ac.ate)}.`,
     atrasada: 'Ainda não recebemos o último pagamento. Tudo bem, você tem alguns dias para resolver sem perder nada.',
     cancelada: `Você continua usando até ${dataBR(ac.ate)}. Pode assinar de novo quando quiser.`,
     expirada: 'Seus dados estão guardados. Assine para continuar usando, ou baixe uma cópia em Conta.',
@@ -91,7 +92,7 @@ export default function Assinatura() {
 
       {local ? null : (
         <>
-          {ac.fase !== 'ativa' || temAssinatura === false ? (
+          {!cortesia && (ac.fase !== 'ativa' || temAssinatura === false) ? (
             <>
               <Text style={st.label}>Plano</Text>
               <View style={st.plans}>
@@ -130,9 +131,9 @@ export default function Assinatura() {
 
               <Text style={st.label}>Seus dados para a cobrança</Text>
               <Card style={{ gap: 4 }}>
-                <TextInput value={nome} onChangeText={setNome} placeholder="Nome completo" placeholderTextColor="#B8AEA4" style={ui.input} autoComplete="name" accessibilityLabel="Nome completo" />
-                <TextInput value={cpf} onChangeText={(v) => setCpf(mascaraCpf(v))} placeholder="CPF" placeholderTextColor="#B8AEA4" style={ui.input} keyboardType="number-pad" maxLength={14} accessibilityLabel="CPF" />
-                <TextInput value={cel} onChangeText={setCel} placeholder="Celular com DDD (opcional)" placeholderTextColor="#B8AEA4" style={ui.input} keyboardType="phone-pad" autoComplete="tel" accessibilityLabel="Celular" />
+                <TextInput value={nome} onChangeText={setNome} placeholder="Nome completo" placeholderTextColor={C.placeholder} style={ui.input} autoComplete="name" accessibilityLabel="Nome completo" />
+                <TextInput value={cpf} onChangeText={(v) => setCpf(mascaraCpf(v))} placeholder="CPF" placeholderTextColor={C.placeholder} style={ui.input} keyboardType="number-pad" maxLength={14} accessibilityLabel="CPF" />
+                <TextInput value={cel} onChangeText={setCel} placeholder="Celular com DDD (opcional)" placeholderTextColor={C.placeholder} style={ui.input} keyboardType="phone-pad" autoComplete="tel" accessibilityLabel="Celular" />
                 <T muted small style={{ marginTop: 8 }}>O Asaas pede o CPF para emitir a cobrança. Seus dados de cartão não passam pelo Dear Days.</T>
               </Card>
 
@@ -142,6 +143,7 @@ export default function Assinatura() {
 
           {msg ? <T style={{ marginTop: 12, lineHeight: 21 }}>{msg}</T> : null}
 
+          {cortesia ? null : (
           <Row style={{ justifyContent: 'space-between', marginTop: 16, flexWrap: 'wrap', rowGap: 4 }}>
             <Btn kind="link" title="Já paguei, atualizar" icon="refresh-outline" color={C.accent}
               onPress={() => { const uid = useStore.getState().userId; if (uid) useAssinatura.getState().carregar(uid); }} />
@@ -154,6 +156,7 @@ export default function Assinatura() {
               ) : <Btn kind="link" title="Cancelar assinatura" color={C.muted} onPress={() => setConfirmCancel(true)} />
             ) : null}
           </Row>
+          )}
         </>
       )}
 
@@ -171,7 +174,7 @@ const st = StyleSheet.create({
   status: { fontFamily: F.title, fontSize: 26, color: C.ink },
   label: { fontFamily: F.bodySemi, fontSize: 12, color: C.muted, textTransform: 'uppercase', letterSpacing: 1.4, marginTop: 18, marginBottom: 10 },
   plans: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  plan: { flexGrow: 1, flexBasis: 240, borderWidth: 1.5, borderColor: 'transparent', backgroundColor: 'rgba(255,255,255,0.6)', borderRadius: R.lg, padding: 18, gap: 4 },
+  plan: { flexGrow: 1, flexBasis: 240, borderWidth: 1.5, borderColor: 'transparent', backgroundColor: C.glass, borderRadius: R.lg, padding: 18, gap: 4 },
   planN: { fontFamily: F.bodyMed, fontSize: 16, color: C.ink },
   price: { fontFamily: F.title, fontSize: 32, color: C.ink },
   suf: { fontFamily: F.body, fontSize: 14, color: C.muted },

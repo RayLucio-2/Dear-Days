@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { addEntrada, addGasto, historico, pendentes } from '@/lib/fin';
+import { categoriaDe } from '@/lib/fala';
+import { success } from '@/lib/actions';
 import { useStore } from '@/lib/store';
 import { fromKey, key, mkey, today } from '@/lib/dates';
 import { brl, num, toBR } from '@/lib/money';
@@ -15,26 +19,72 @@ export default function Financas() {
   const id = 'f-' + mkey(d);
   const S = finSums(docs, d);
   const [, strong] = monthColor(d);
-  const max = Math.max(S.inc, S.out, 1);
+  const pend = pendentes(docs, d);
+  const falta = pend.reduce((t, x) => t + x.v, 0);
+  const saiu = S.out - falta;
+  const hist = historico(docs, d);
+  const [lanc, setLanc] = useState<'gasto' | 'entrada' | null>(null);
+  const [todas, setTodas] = useState(false);
+  const { set } = useStore.getState();
+  const diaLanc = key(today()).slice(0, 7) === mkey(d) ? today() : d;
 
   return (
     <Screen>
       <MonthNav eyebrow="Finanças" />
       <T muted small style={{ marginTop: -8, marginBottom: 12 }}>Digite os valores com vírgula, como 1.250,90.</T>
 
-      <View style={st.tiles}>
-        <Tile label="Entradas" value={S.inc} />
-        <Tile label="Fixas" value={S.fix} />
-        <Tile label="Variáveis" value={S.va} />
-        <Tile label="Parcelas e outras" value={S.pc + S.ox} />
-        <Tile label="Saldo do mês" value={S.bal} strong={S.bal < 0 ? C.danger : strong} />
+      <View style={st.hero}>
+        <Text style={st.heroL}>{S.bal >= 0 ? 'Sobra prevista no mês' : 'Falta no mês'}</Text>
+        <Text style={[st.heroV, S.bal < 0 && { color: C.danger }]} numberOfLines={1} adjustsFontSizeToFit>{brl(Math.abs(S.bal))}</Text>
+        <T muted small>{falta ? `Já conta ${brl(falta)} em contas que ainda vão ser pagas.` : S.out ? 'Todas as contas lançadas estão pagas.' : 'Comece anotando o que entra e o que sai.'}</T>
       </View>
 
-      <Card title="Resumo">
-        <Bar label="Entradas" v={S.inc} max={max} color={C.ok} />
-        <Bar label="Saídas" v={S.out} max={max} color={C.danger} />
-        {S.days ? <T muted small style={{ marginTop: 8 }}>Gastos anotados nos dias: {brl(S.days)} (já devem estar nas variáveis, não somam de novo).</T> : null}
-      </Card>
+      <View style={st.tiles}>
+        <View style={st.tile}>
+          <Row style={{ gap: 6 }}><Ionicons name="arrow-down-circle" size={18} color={C.ok} /><Text style={st.tileL}>Entrou no mês</Text></Row>
+          <Text style={[st.tileV, { color: C.ok }]} numberOfLines={1} adjustsFontSizeToFit>{brl(S.inc)}</Text>
+        </View>
+        <View style={st.tile}>
+          <Row style={{ gap: 6 }}><Ionicons name="arrow-up-circle" size={18} color={strong} /><Text style={st.tileL}>Saiu no mês</Text></Row>
+          <Text style={st.tileV} numberOfLines={1} adjustsFontSizeToFit>{brl(saiu)}</Text>
+        </View>
+      </View>
+
+      <Row style={{ gap: 10, marginBottom: 16 }}>
+        <Btn title="Gasto" icon="add" onPress={() => setLanc('gasto')} color={strong} style={{ flex: 1, minHeight: 50 }} />
+        <Btn kind="soft" title="Entrada" icon="add" onPress={() => setLanc('entrada')} color={C.ok} style={{ flex: 1, minHeight: 50 }} />
+      </Row>
+
+      {pend.length ? (
+        <Card title="Contas a pagar" right={pend.length > 4 ? <Btn kind="link" title={todas ? 'ver menos' : `ver todas (${pend.length})`} color={C.accent} onPress={() => setTodas(!todas)} /> : undefined}>
+          {(todas ? pend : pend.slice(0, 4)).map((x) => (
+            <Row key={x.k} style={[st.line, { paddingVertical: 8, gap: 10 }]}>
+              <View style={{ flex: 1 }}>
+                <Text style={[ui.t, { fontFamily: F.bodyMed }]}>{x.t}</Text>
+                <T muted small>{x.sub} · {brl(x.v)}</T>
+              </View>
+              <Btn kind="soft" title="Marcar paga" color={strong} style={{ minHeight: 38 }} onPress={() => { set(x.doc, x.path, true); success(); }} />
+            </Row>
+          ))}
+        </Card>
+      ) : null}
+
+      {hist.length ? (
+        <Card title="Últimos lançamentos">
+          {hist.slice(0, 5).map((x, i) => (
+            <Row key={i} style={[st.line, { paddingVertical: 6 }]}>
+              <Ionicons name={x.tipo === 'entrada' ? 'arrow-down-circle-outline' : 'arrow-up-circle-outline'} size={18} color={x.tipo === 'entrada' ? C.ok : C.muted} />
+              <View style={{ flex: 1 }}>
+                <Text style={ui.t}>{x.t}</Text>
+                <T muted small>{x.d.slice(8, 10)}/{x.d.slice(5, 7)}{x.tipo === 'gasto' && typeof x.c === 'number' ? ` · ${VARIA[x.c]}` : ''}</T>
+              </View>
+              <Text style={[ui.t, ui.num, x.tipo === 'entrada' && { color: C.ok }]}>{x.tipo === 'entrada' ? '+' : ''}{brl(num(x.v))}</Text>
+            </Row>
+          ))}
+        </Card>
+      ) : null}
+
+      <Lancar tipo={lanc} dia={diaLanc} strong={strong} onClose={() => setLanc(null)} />
 
       <Fold id="fin-inc" title="Entradas" icon="arrow-down-circle-outline" color={C.ok} summary={brl(S.inc)}>
         {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -83,21 +133,52 @@ export default function Financas() {
   );
 }
 
-function Tile({ label, value, strong }: { label: string; value: number; strong?: string }) {
+/** Janela para lançar um gasto ou uma entrada com poucos toques. */
+function Lancar({ tipo, dia, strong, onClose }: { tipo: 'gasto' | 'entrada' | null; dia: Date; strong: string; onClose: () => void }) {
+  const [v, setV] = useState('');
+  const [t, setT] = useState('');
+  const [cat, setCat] = useState<number | null>(null);
+  const valor = num(v);
+  const c = cat ?? categoriaDe(t);
+  function salvar() {
+    if (!valor) return;
+    if (tipo === 'gasto') addGasto(dia, valor, c, t);
+    else addEntrada(dia, valor, t);
+    success();
+    setV(''); setT(''); setCat(null);
+    onClose();
+  }
   return (
-    <View style={[st.tile, strong && { backgroundColor: strong, borderColor: strong }]}>
-      <Text style={[st.tileL, strong && { color: '#fff' }]}>{label}</Text>
-      <Text style={[st.tileV, strong && { color: '#fff' }]} numberOfLines={1} adjustsFontSizeToFit>{brl(value)}</Text>
-    </View>
-  );
-}
-
-function Bar({ label, v, max, color }: { label: string; v: number; max: number; color: string }) {
-  return (
-    <View style={{ marginBottom: 10 }}>
-      <Row style={{ justifyContent: 'space-between' }}><T small>{label}</T><T small style={ui.num}>{brl(v)}</T></Row>
-      <View style={st.track}><View style={[st.fill, { width: `${Math.min(100, (v / max) * 100)}%`, backgroundColor: color }]} /></View>
-    </View>
+    <Modal visible={!!tipo} transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable style={st.backdrop} onPress={onClose} accessibilityLabel="Fechar" />
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, justifyContent: 'flex-end' }} pointerEvents="box-none">
+        <View style={st.sheet}>
+          <Row style={{ justifyContent: 'space-between' }}>
+            <Text style={st.sheetH}>{tipo === 'gasto' ? 'Novo gasto' : 'Nova entrada'}</Text>
+            <IconBtn icon="close" label="Fechar" onPress={onClose} />
+          </Row>
+          <TextInput value={v} onChangeText={setV} placeholder="R$ 0,00" placeholderTextColor={C.placeholder} keyboardType="decimal-pad" autoFocus
+            style={[st.inp, { fontSize: 28, minHeight: 60, fontFamily: F.bodySemi }]} accessibilityLabel="Valor" onSubmitEditing={salvar} />
+          <TextInput value={t} onChangeText={setT} placeholder={tipo === 'gasto' ? 'Com o quê? (ex.: mercado, uber)' : 'De onde? (ex.: salário, freela)'} placeholderTextColor={C.placeholder}
+            style={st.inp} accessibilityLabel="Descrição" onSubmitEditing={salvar} />
+          {tipo === 'gasto' ? (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+              {VARIA.map((n, i) => {
+                const on = c === i;
+                return (
+                  <Pressable key={n} onPress={() => setCat(i)} accessibilityRole="radio" accessibilityState={{ selected: on }}
+                    style={[st.chip, on && { backgroundColor: strong, borderColor: strong }]}>
+                    <Text style={[st.chipT, on && { color: '#fff' }]}>{n}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          ) : null}
+          <Btn title={valor ? `Salvar ${brl(valor)}` : 'Salvar'} icon="checkmark" onPress={salvar} disabled={!valor} color={tipo === 'gasto' ? strong : C.ok} style={{ minHeight: 50 }} />
+          <T muted small style={{ textAlign: 'center' }}>Dica: no botão + de qualquer tela, escreva “gastei 32 no mercado”.</T>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
   );
 }
 
@@ -144,13 +225,13 @@ function Parcelas({ id, d, strong }: { id: string; d: Date; strong: string }) {
 
       {open ? (
         <View style={st.form}>
-          <TextInput style={st.inp} value={form.d} onChangeText={upd('d')} placeholder="O que foi comprado (ex.: geladeira)" placeholderTextColor="#A39A90" />
+          <TextInput style={st.inp} value={form.d} onChangeText={upd('d')} placeholder="O que foi comprado (ex.: geladeira)" placeholderTextColor={C.placeholder} />
           <Row>
-            <TextInput style={[st.inp, { flex: 1 }]} value={form.t} onChangeText={upd('t')} placeholder="Valor total" keyboardType="decimal-pad" placeholderTextColor="#A39A90" />
-            <TextInput style={[st.inp, { flex: 1 }]} value={form.n} onChangeText={upd('n')} placeholder="Nº de parcelas" keyboardType="number-pad" placeholderTextColor="#A39A90" />
+            <TextInput style={[st.inp, { flex: 1 }]} value={form.t} onChangeText={upd('t')} placeholder="Valor total" keyboardType="decimal-pad" placeholderTextColor={C.placeholder} />
+            <TextInput style={[st.inp, { flex: 1 }]} value={form.n} onChangeText={upd('n')} placeholder="Nº de parcelas" keyboardType="number-pad" placeholderTextColor={C.placeholder} />
           </Row>
-          <TextInput style={st.inp} value={form.v} onChangeText={upd('v')} placeholder="ou o valor de cada parcela" keyboardType="decimal-pad" placeholderTextColor="#A39A90" />
-          <TextInput style={st.inp} value={form.c} onChangeText={upd('c')} placeholder="Cartão ou forma de pagamento (opcional)" placeholderTextColor="#A39A90" />
+          <TextInput style={st.inp} value={form.v} onChangeText={upd('v')} placeholder="ou o valor de cada parcela" keyboardType="decimal-pad" placeholderTextColor={C.placeholder} />
+          <TextInput style={st.inp} value={form.c} onChangeText={upd('c')} placeholder="Cartão ou forma de pagamento (opcional)" placeholderTextColor={C.placeholder} />
           <T muted small>A primeira parcela entra neste mês.</T>
           {msg ? <Text style={{ fontFamily: F.body, color: C.danger }}>{msg}</Text> : null}
           <Row><Btn title="Lançar parcelas" onPress={add} color={strong} /><Btn kind="link" title="Cancelar" onPress={() => setOpen(false)} color={C.muted} /></Row>
@@ -264,9 +345,9 @@ function Espera({ strong }: { strong: string }) {
         </View>
       ))}
       <View style={[st.form, { marginTop: 10 }]}>
-        <TextInput style={st.inp} value={t} onChangeText={setT} placeholder="O que quero comprar" placeholderTextColor="#A39A90" />
+        <TextInput style={st.inp} value={t} onChangeText={setT} placeholder="O que quero comprar" placeholderTextColor={C.placeholder} />
         <Row>
-          <TextInput style={[st.inp, { flex: 1 }]} value={v} onChangeText={setV} placeholder="Quanto custa (opcional)" keyboardType="decimal-pad" placeholderTextColor="#A39A90" />
+          <TextInput style={[st.inp, { flex: 1 }]} value={v} onChangeText={setV} placeholder="Quanto custa (opcional)" keyboardType="decimal-pad" placeholderTextColor={C.placeholder} />
           <Btn title="Esperar" onPress={add} color={strong} disabled={!t.trim()} />
         </Row>
       </View>
@@ -277,10 +358,18 @@ function Espera({ strong }: { strong: string }) {
 }
 
 const st = StyleSheet.create({
+  hero: { backgroundColor: C.surface, borderRadius: R.lg, padding: 20, marginBottom: 10, gap: 2 },
+  heroL: { fontFamily: F.body, fontSize: 14, color: C.muted },
+  heroV: { fontFamily: F.title, fontSize: 40, color: C.ink, fontVariant: ['tabular-nums'] },
+  backdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(47,43,39,0.35)' },
+  sheet: { backgroundColor: C.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 18, paddingBottom: 28, gap: 12, width: '100%', maxWidth: 640, alignSelf: 'center' },
+  sheetH: { fontFamily: F.title, fontSize: 24, color: C.ink },
+  chip: { borderWidth: 1, borderColor: C.line, borderRadius: 999, paddingHorizontal: 12, minHeight: 36, justifyContent: 'center', backgroundColor: C.bg },
+  chipT: { fontFamily: F.body, fontSize: 13, color: C.ink },
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
-  tile: { flexGrow: 1, flexBasis: '45%', backgroundColor: C.surface, borderRadius: R.md, padding: 14 },
+  tile: { flexGrow: 1, flexBasis: '45%', backgroundColor: C.surface, borderRadius: R.md, padding: 14, gap: 4 },
   tileL: { fontFamily: F.body, fontSize: 12, color: C.muted },
-  tileV: { fontFamily: F.bodySemi, fontSize: 16, color: C.ink, marginTop: 2, fontVariant: ['tabular-nums'] },
+  tileV: { fontFamily: F.bodySemi, fontSize: 20, color: C.ink, marginTop: 2, fontVariant: ['tabular-nums'] },
   track: { height: 10, backgroundColor: C.sand, borderRadius: 5, marginTop: 4, overflow: 'hidden' },
   fill: { height: 10, borderRadius: 5 },
   money: { flex: 0, width: 110, textAlign: 'right' },

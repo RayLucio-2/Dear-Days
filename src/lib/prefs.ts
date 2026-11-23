@@ -33,17 +33,18 @@ export function themePair(cfg: any): [string, string] | null {
 export const TAB_VIEWS: [string, string][] = [
   ['dia', 'Dia'], ['semana', 'Semana'], ['mes', 'Mês'], ['habitos', 'Hábitos'], ['financas', 'Finanças'],
   ['emocoes', 'Emoções'], ['graficos', 'Gráficos'], ['ano', 'Plano do ano'], ['rotina', 'Tarefas fixas'],
+  ['sono', 'Sono'], ['compras', 'Lista de compras'], ['parar', 'Quero parar'],
 ];
 export const DEF_TABS = ['dia', 'mes', 'habitos', 'financas', 'semana', 'emocoes', 'graficos'];
 /** No celular cabem Início + 4 abas + Mais. */
 export const MOBILE_TABS = 4;
 
 export const HOME_BLOCKS: [string, string][] = [
-  ['hoje', 'Resumo de hoje'], ['atalhos', 'Atalhos'], ['caixa', 'Caixa de entrada e revisão'], ['tarefas', 'Tarefas de hoje'],
+  ['hoje', 'Resumo de hoje'], ['potinho', 'Potinho do mês'], ['atalhos', 'Atalhos'], ['caixa', 'Caixa de entrada e revisão'], ['tarefas', 'Tarefas de hoje'],
   ['habitos', 'Hábitos e água'], ['metas', 'Metas do mês'], ['financas', 'Finanças do mês'], ['emocoes', 'Emoções do mês'],
   ['ferramentas', 'Ferramentas'], ['backup', 'Cópia de segurança'],
 ];
-export const DEF_HOME = ['hoje', 'caixa', 'tarefas', 'habitos', 'metas', 'financas'];
+export const DEF_HOME = ['hoje', 'potinho', 'caixa', 'tarefas', 'habitos', 'metas', 'financas'];
 
 /** Atalhos: páginas e ferramentas que podem virar cartão no Início. */
 export const FAV_VIEWS: [string, string, string][] = [
@@ -55,6 +56,7 @@ export const FAV_VIEWS: [string, string, string][] = [
   ['leituras', 'Diário de leituras', 'Livros e comentários'], ['notas', 'Notas rápidas', 'Para tirar da cabeça'],
   ['escrita', 'Escrita terapêutica', 'Um convite por dia'], ['memorias', 'Memórias do ano', 'O que fez cada mês valer'],
   ['sonhos', 'Top 3 de sonhos', 'E o primeiro passo de cada um'], ['pilares', 'Pilares', 'Seus valores'],
+  ['sono', 'Sono', 'Quanto você dormiu'], ['compras', 'Lista de compras', 'Mercado por seção'], ['parar', 'Quero parar', 'Dias sem e quanto economizou'],
 ];
 export const DEF_FAV = ['dia', 'mes', 'emocoes', 'financas'];
 export const MAX_FAV = 6;

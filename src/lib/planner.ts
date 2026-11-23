@@ -6,6 +6,7 @@
  */
 import { key, mkey, fromKey, today } from './dates';
 import { num } from './money';
+import { soft, strongC } from './theme';
 
 export type Doc = Record<string, any>;
 export type Docs = Record<string, Doc>;
@@ -18,14 +19,27 @@ export const COR: [string, string][] = [
 /** Cor escolhida em Personalizar (o store avisa quando muda). Sem escolha, cada mês tem a sua. */
 let themeOverride: [string, string] | null = null;
 export const setThemeOverride = (p: [string, string] | null) => { themeOverride = p; };
-export const monthColor = (d: Date): [string, string] => themeOverride ?? COR[d.getMonth()];
+export const monthColor = (d: Date): [string, string] => {
+  const p = themeOverride ?? COR[d.getMonth()];
+  return [soft(p[0]), strongC(p[1])];
+};
 
 export const MOODN = ['radiante', 'alegria', 'plenitude', 'tristeza', 'ansiedade', 'raiva'];
 export const MOODC = ['#5E7A52', '#9DB28A', '#C4868D', '#4F6180', '#8797B0', '#B08550'];
 export const MOODT = ['#fff', '#2F2B27', '#2F2B27', '#fff', '#2F2B27', '#2F2B27'];
-export const CATS = ['#D3DEE9', '#EFD6D7', '#D5E1D0', '#F1DCC2'];
+export const CATS = ['#D3DEE9', '#EFD6D7', '#D5E1D0', '#F1DCC2'].map(soft);
 export const CATN = ['azul', 'rosa', 'verde', 'areia'];
-export const CATSTRONG = ['#5C7894', '#A2656A', '#66855F', '#9C7642'];
+export const CATSTRONG = ['#5C7894', '#A2656A', '#66855F', '#9C7642'].map(strongC);
+
+/** Cores dos hábitos: [fundo do cartão, bolinha vazia, bolinha feita]. */
+export const HAB_CORES: { n: string; c: [string, string, string] }[] = [
+  { n: 'rosa', c: ['#FBEAF0', '#F3C9D8', '#D9538A'] },
+  { n: 'azul', c: ['#E6F1F8', '#C4DDEC', '#3F8FC0'] },
+  { n: 'amarelo', c: ['#FCF4DC', '#F2DE9E', '#D9A520'] },
+  { n: 'lilás', c: ['#F0EBF9', '#D8CCF0', '#8B6CCB'] },
+  { n: 'pêssego', c: ['#FBEEE6', '#F0D2C0', '#C98863'] },
+  { n: 'verde', c: ['#E8F3EA', '#C6E0CB', '#5B9E6A'] },
+].map((x) => ({ n: x.n, c: [soft(x.c[0]), soft(x.c[1]), strongC(x.c[2])] as [string, string, string] }));
 export const EXER = ['nenhum', 'leve', 'médio', 'intenso'];
 export const FOOD: [string, string][] = [['cafe', 'café'], ['almoco', 'almoço'], ['lanche', 'lanche'], ['jantar', 'jantar']];
 

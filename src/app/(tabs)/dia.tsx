@@ -12,6 +12,7 @@ import { EnergyPicker, Focus } from '@/components/Focus';
 import { Routine } from '@/components/Routine';
 import { moveAll, pendingIdx } from '@/lib/actions';
 import { CalEvent, downloadIcs } from '@/lib/gcal';
+import { AgendaDia } from '@/components/AgendaDia';
 import Svg, { Circle } from 'react-native-svg';
 import { TaskItem } from '@/components/TaskItem';
 import { Cup, Face } from '@/components/art';
@@ -305,6 +306,7 @@ function Tasks({ id, d, strong }: { id: string; d: Date; strong: string }) {
 
   return (
     <Fold id="dia-tarefas" title="Tarefas" icon="checkbox-outline" color={strong} summary={totalN ? `${doneN} de ${totalN} feitas` : 'nenhuma tarefa'}>
+      <AgendaDia id={id} strong={strong} />
       {!visible.length ? <T muted style={{ marginBottom: 10 }}>Nenhuma tarefa ainda. Toque em adicionar e, se for grande, quebre em subtarefas.</T> : null}
       {visible.map((x) =>
         x.kind === 'task' ? (
@@ -398,7 +400,7 @@ const st = StyleSheet.create({
   segB: { flex: 1, flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center', minHeight: 40, borderRadius: 999,
     shadowColor: '#5A4A3A', shadowOpacity: 0, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } },
   segT: { fontFamily: F.bodyMed, fontSize: 14, color: C.muted },
-  yest: { flexDirection: 'row', gap: 10, backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: R.lg, padding: 14, marginTop: 12 },
+  yest: { flexDirection: 'row', gap: 10, backgroundColor: C.glass, borderRadius: R.lg, padding: 14, marginTop: 12 },
   yestT: { fontFamily: F.body, fontSize: 14, color: C.ink },
   pick: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
   pickB: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: C.line, borderRadius: 999, paddingHorizontal: 12, minHeight: 36 },

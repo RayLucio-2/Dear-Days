@@ -15,7 +15,7 @@ const CH = 'lembretes';
 const MAX_TAREFAS_DIA = 8; // aviso demais vira ruído
 const AGUA = [10, 13, 16, 19];
 
-export type Avisos = { tarefas?: boolean; agua?: boolean; compras?: boolean };
+export type Avisos = { tarefas?: boolean; agua?: boolean; compras?: boolean; resumo?: boolean };
 export const avisosOf = (docs: Docs): Avisos => docs['t-cfg']?.app?.avisos || {};
 
 let ready = false;

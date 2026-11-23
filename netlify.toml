@@ -2,7 +2,7 @@
 # Em Site configuration > Environment variables, cadastre:
 #   EXPO_PUBLIC_SUPABASE_URL e EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 [build]
-  command = "npx expo export --platform web"
+  command = "npx expo export --platform web && node scripts/pwa.js"
   publish = "dist"
 
 [build.environment]

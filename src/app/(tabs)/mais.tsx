@@ -13,7 +13,7 @@ import { C, F, R } from '@/lib/theme';
 
 const PAGE_ICON: Record<string, string> = {
   dia: 'sunny-outline', semana: 'albums-outline', mes: 'calendar-outline', habitos: 'leaf-outline', financas: 'wallet-outline',
-  emocoes: 'flower-outline', graficos: 'bar-chart-outline', ano: 'calendar-number-outline', rotina: 'repeat-outline',
+  emocoes: 'flower-outline', graficos: 'bar-chart-outline', ano: 'calendar-number-outline', rotina: 'repeat-outline', sono: 'moon-outline', compras: 'cart-outline', parar: 'shield-checkmark-outline',
 };
 
 type Item = { n: string; icon: string; go: () => void; badge?: number };

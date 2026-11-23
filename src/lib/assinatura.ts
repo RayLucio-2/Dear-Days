@@ -85,6 +85,10 @@ export const useAssinatura = create<State>((set) => ({
 
 export const useAcesso = () => acessoDe(useAssinatura((s) => s.sub));
 
+/** Acesso gratuito para sempre (cortesia, sem cobrança no Asaas). */
+export const ehCortesia = (s: Sub | null) =>
+  !!s && s.status === 'active' && !s.asaas_subscription_id && !!s.current_period_end && new Date(s.current_period_end).getFullYear() >= 2090;
+
 /** Chama a função "assinar" do Supabase e abre a página de pagamento do Asaas. */
 export async function assinar(dados: { plano: Plano; forma: Forma; nome: string; cpf: string; celular?: string }) {
   const { data, error } = await supabase.functions.invoke('assinar', { body: dados });

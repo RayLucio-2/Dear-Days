@@ -42,3 +42,6 @@ yarn-error.*
 
 # segredos
 .env
+
+# arquivos compactados
+*.zip

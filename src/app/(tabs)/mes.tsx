@@ -80,7 +80,7 @@ const st = StyleSheet.create({
   cell: { width: `${100 / 7}%`, aspectRatio: 0.9, padding: 2 },
   day: { borderRadius: 10, borderWidth: 1, borderColor: 'transparent', alignItems: 'center', paddingTop: 6 },
   dn: { fontFamily: F.title, fontSize: 18, color: C.ink },
-  past: { color: '#A39A90', textDecorationLine: 'line-through' },
+  past: { color: C.faint, textDecorationLine: 'line-through' },
   ind: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
   dot: { width: 7, height: 7, borderRadius: 4 },
   cnt: { fontFamily: F.body, fontSize: 10, color: C.muted },

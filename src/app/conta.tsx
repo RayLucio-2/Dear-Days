@@ -10,7 +10,9 @@ import { useStore } from '@/lib/store';
 import { Btn, Card, IconBtn, Row, Screen, T, s as ui } from '@/components/ui';
 import { C, F } from '@/lib/theme';
 import { askPermission, avisosOf } from '@/lib/notify';
-import { useAcesso, useAssinatura } from '@/lib/assinatura';
+import { ehCortesia, useAcesso, useAssinatura } from '@/lib/assinatura';
+import { ativarPush } from '@/lib/push';
+import { icalValido } from '@/lib/agenda';
 
 export default function Conta() {
   const email = useAuth((a) => a.email);
@@ -79,6 +81,7 @@ export default function Conta() {
       {!local ? <AssinaturaCard /> : null}
       {!local ? <Senha /> : null}
       <Avisos />
+      {!local ? <Agenda /> : null}
 
       <Card title="Cópia de segurança">
         <T muted style={{ marginBottom: 12, lineHeight: 21 }}>
@@ -95,14 +98,23 @@ export default function Conta() {
         <Btn kind="soft" title="Sair" icon="log-out-outline" color={C.danger}
           onPress={async () => { await useAuth.getState().signOut(); router.replace('/login'); }} />
       </View>
+
+      {!local ? <Excluir /> : null}
+
+      <Row style={{ justifyContent: 'center', gap: 18, marginTop: 24 }}>
+        <Btn kind="link" title="Termos de uso" color={C.muted} onPress={() => router.push('/termos')} />
+        <Btn kind="link" title="Privacidade" color={C.muted} onPress={() => router.push('/privacidade')} />
+      </Row>
     </Screen>
   );
 }
 
-const OPC: { k: 'tarefas' | 'agua' | 'compras'; t: string; d: string }[] = [
+type AvisoK = 'tarefas' | 'agua' | 'compras' | 'resumo';
+const OPC: { k: AvisoK; t: string; d: string }[] = [
   { k: 'tarefas', t: 'Início das tarefas', d: 'Um aviso na hora marcada, com o primeiro passo. No máximo 8 por dia.' },
   { k: 'agua', t: 'Beber água', d: '4 lembretes por dia (10h, 13h, 16h e 19h). Some se você já marcou os copos.' },
   { k: 'compras', t: 'Compras para esperar', d: 'Pergunta depois de 24 horas se você ainda quer comprar.' },
+  { k: 'resumo', t: 'Resumo da semana', d: 'Um e-mail no domingo à noite com o que você fez. Sem cobrança, só para ver o caminho.' },
 ];
 
 function Avisos() {
@@ -110,13 +122,17 @@ function Avisos() {
   const set = useStore((s) => s.set);
   const av = avisosOf(docs);
   const [msg, setMsg] = useState('');
-  async function toggle(k: 'tarefas' | 'agua' | 'compras', v: boolean) {
+  const on = (k: AvisoK) => (k === 'resumo' ? av.resumo !== false : !!av[k]);
+  async function toggle(k: AvisoK, v: boolean) {
     setMsg('');
-    if (v) {
-      const ok = await askPermission();
-      if (!ok) {
-        setMsg(Platform.OS === 'web' ? 'Os avisos funcionam no app do celular.' : 'O celular não deixou enviar avisos. Libere nas configurações do aparelho, em Notificações.');
-        return;
+    if (v && k !== 'resumo') {
+      if (Platform.OS === 'web') {
+        const r = await ativarPush();
+        if (!r.ok) { setMsg(r.msg || 'Não foi possível ligar os lembretes.'); return; }
+        setMsg('Pronto: este navegador vai receber os lembretes.');
+      } else {
+        const ok = await askPermission();
+        if (!ok) { setMsg('O celular não deixou enviar avisos. Libere nas configurações do aparelho, em Notificações.'); return; }
       }
     }
     set('t-cfg', `app.avisos.${k}`, v);
@@ -130,7 +146,7 @@ function Avisos() {
             <Text style={{ fontFamily: F.bodyMed, fontSize: 15, color: C.ink }}>{o.t}</Text>
             <T muted small>{o.d}</T>
           </View>
-          <Switch value={!!av[o.k]} onValueChange={(v) => toggle(o.k, v)} trackColor={{ true: C.accent, false: C.line }} thumbColor="#fff" accessibilityLabel={o.t} />
+          <Switch value={on(o.k)} onValueChange={(v) => toggle(o.k, v)} trackColor={{ true: C.accent, false: C.line }} thumbColor="#fff" accessibilityLabel={o.t} />
         </Row>
       ))}
       {msg ? <T style={{ marginTop: 8 }}>{msg}</T> : null}
@@ -141,10 +157,11 @@ function Avisos() {
 function AssinaturaCard() {
   const ac = useAcesso();
   const plan = useAssinatura((s) => s.sub?.plan);
+  const cortesia = ehCortesia(useAssinatura((s) => s.sub));
   const ate = ac.ate ? ac.ate.toLocaleDateString('pt-BR') : '';
   const linha = {
     teste: `Teste grátis até ${ate}`,
-    ativa: `Plano ${plan === 'anual' ? 'anual' : 'mensal'}, renova em ${ate}`,
+    ativa: cortesia ? 'Acesso gratuito, sem cobrança' : `Plano ${plan === 'anual' ? 'anual' : 'mensal'}, renova em ${ate}`,
     atrasada: 'Pagamento pendente',
     cancelada: `Cancelada, você usa até ${ate}`,
     expirada: 'Teste grátis encerrado',
@@ -170,11 +187,74 @@ function Senha() {
   return (
     <Card title="Senha">
       <Row>
-        <TextInput value={p} onChangeText={setP} secureTextEntry placeholder="Nova senha" placeholderTextColor="#A39A90" autoComplete="new-password"
+        <TextInput value={p} onChangeText={setP} secureTextEntry placeholder="Nova senha" placeholderTextColor={C.placeholder} autoComplete="new-password"
           style={{ flex: 1, fontFamily: F.body, fontSize: 15, color: C.ink, borderWidth: 1, borderColor: C.line, borderRadius: 10, paddingHorizontal: 12, minHeight: 44 }} />
         <Btn title="Salvar" onPress={salvar} />
       </Row>
       {msg ? <T muted small style={{ marginTop: 6 }}>{msg}</T> : null}
+    </Card>
+  );
+}
+
+/** Google Agenda: cola o endereço secreto iCal e os compromissos aparecem no Dia. */
+function Agenda() {
+  const url: string = useStore((s) => s.docs['t-cfg']?.app?.ical) || '';
+  const [txt, setTxt] = useState(url);
+  const [msg, setMsg] = useState('');
+  function salvar() {
+    const v = txt.trim();
+    if (v && !icalValido(v)) return setMsg('Esse endereço não parece certo. Ele começa com https:// e termina com .ics');
+    useStore.getState().set('t-cfg', 'app.ical', v || undefined);
+    setMsg(v ? 'Pronto: seus compromissos aparecem na tela Dia, em Tarefas.' : 'Agenda desligada.');
+  }
+  return (
+    <Card title="Google Agenda">
+      <T muted style={{ marginBottom: 8, lineHeight: 21 }}>
+        Veja os compromissos da sua agenda dentro do Dia. No Google Agenda pelo computador: Configurações {'>'} clique na sua agenda {'>'} Integrar agenda {'>'} copie o “Endereço secreto no formato iCal” e cole aqui.
+      </T>
+      <TextInput value={txt} onChangeText={setTxt} placeholder="https://calendar.google.com/calendar/ical/.../basic.ics" placeholderTextColor={C.placeholder}
+        style={ui.input} autoCapitalize="none" autoCorrect={false} accessibilityLabel="Endereço secreto iCal" />
+      <Row style={{ gap: 14, marginTop: 10 }}>
+        <Btn title="Salvar" icon="checkmark" onPress={salvar} />
+        {url ? <Btn kind="link" title="Desligar" color={C.muted} onPress={() => { setTxt(''); useStore.getState().set('t-cfg', 'app.ical', undefined); setMsg('Agenda desligada.'); }} /> : null}
+      </Row>
+      <T muted small style={{ marginTop: 8 }}>Esse endereço é só seu: não mande para ninguém. O Dear Days só lê a agenda, nunca muda nada nela.</T>
+      {msg ? <T style={{ marginTop: 8 }}>{msg}</T> : null}
+    </Card>
+  );
+}
+
+/** Excluir conta (LGPD): cancela a assinatura e apaga tudo. */
+function Excluir() {
+  const [aberto, setAberto] = useState(false);
+  const [txt, setTxt] = useState('');
+  const [msg, setMsg] = useState('');
+  const [busy, setBusy] = useState(false);
+  async function excluir() {
+    setBusy(true); setMsg('');
+    const { data, error } = await supabase.functions.invoke('excluir-conta', { body: { confirmo: txt.trim().toUpperCase() } });
+    setBusy(false);
+    if (error || data?.erro) { setMsg(data?.erro || 'Não foi possível excluir agora. Tente de novo.'); return; }
+    await useAuth.getState().signOut().catch(() => {});
+    router.replace('/login');
+  }
+  if (!aberto) {
+    return (
+      <View style={{ marginTop: 18, alignItems: 'flex-start' }}>
+        <Btn kind="link" title="Excluir minha conta" color={C.muted} onPress={() => setAberto(true)} />
+      </View>
+    );
+  }
+  return (
+    <Card title="Excluir minha conta" style={{ marginTop: 14 }}>
+      <T style={{ lineHeight: 21 }}>Isso apaga todos os seus dados do Dear Days e cancela a assinatura. Não dá para desfazer.</T>
+      <T muted small style={{ marginTop: 6, lineHeight: 19 }}>Se quiser guardar alguma coisa, use “Baixar cópia” antes. Valores já pagos não são devolvidos automaticamente; para isso, fale com o suporte.</T>
+      <TextInput value={txt} onChangeText={setTxt} placeholder="Digite EXCLUIR para confirmar" placeholderTextColor={C.placeholder} style={[ui.input, { marginTop: 10 }]} autoCapitalize="characters" accessibilityLabel="Confirmação" />
+      <Row style={{ gap: 14, marginTop: 10 }}>
+        <Btn title={busy ? 'Excluindo...' : 'Excluir para sempre'} color={C.danger} onPress={excluir} disabled={busy || txt.trim().toUpperCase() !== 'EXCLUIR'} />
+        <Btn kind="link" title="Voltar" color={C.muted} onPress={() => { setAberto(false); setTxt(''); }} />
+      </Row>
+      {msg ? <T style={{ marginTop: 8 }}>{msg}</T> : null}
     </Card>
   );
 }

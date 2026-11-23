@@ -26,6 +26,9 @@ const ICON: Record<string, [any, any]> = {
   mais: ['apps-outline', 'apps'],
   ano: ['calendar-number-outline', 'calendar-number'],
   rotina: ['repeat-outline', 'repeat'],
+  sono: ['moon-outline', 'moon'],
+  compras: ['cart-outline', 'cart'],
+  parar: ['shield-checkmark-outline', 'shield-checkmark'],
 };
 
 const LABEL: Record<string, string> = Object.fromEntries(TAB_VIEWS);
@@ -62,6 +65,9 @@ export default function TabsLayout() {
   if (!signed) return <Redirect href="/login" />;
   // Teste grátis acabou e não há assinatura: vai para a tela de assinar (os dados continuam guardados)
   if (subOk && !acesso.liberado) return <Redirect href="/assinatura" />;
+  // Primeiro acesso de uma conta nova (sem nenhum dia ou mês preenchido): passo a passo de boas-vindas
+  const nova = ready && !cfg?.app?.boas && !Object.keys(docs).some((k) => /^[dmfwy]-/.test(k));
+  if (nova) return <Redirect href="/bemvindo" />;
   if (!ready) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: C.bg }}>
@@ -75,7 +81,7 @@ export default function TabsLayout() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: C.ink,
-        tabBarInactiveTintColor: '#A89E94',
+        tabBarInactiveTintColor: C.faint,
         ...(wide
           ? {
               // computador: menu na lateral, com o nome ao lado do ícone

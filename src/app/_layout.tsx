@@ -7,13 +7,14 @@ import { useFonts, EBGaramond_400Regular_Italic, EBGaramond_500Medium } from '@e
 import { IBMPlexSans_400Regular, IBMPlexSans_500Medium, IBMPlexSans_600SemiBold } from '@expo-google-fonts/ibm-plex-sans';
 import { useAuth } from '@/lib/auth';
 import { initNotifications } from '@/lib/notify';
-import { C } from '@/lib/theme';
+import { registrarSW } from '@/lib/push';
+import { C, DARK } from '@/lib/theme';
 
 export default function RootLayout() {
   const [fontsOk] = useFonts({ EBGaramond_400Regular_Italic, EBGaramond_500Medium, IBMPlexSans_400Regular, IBMPlexSans_500Medium, IBMPlexSans_600SemiBold });
   const loading = useAuth((a) => a.loading);
   useEffect(() => useAuth.getState().start(), []);
-  useEffect(() => { initNotifications(); }, []);
+  useEffect(() => { initNotifications(); registrarSW(); }, []);
 
   if (!fontsOk || loading) {
     return (
@@ -24,7 +25,7 @@ export default function RootLayout() {
   }
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
+      <StatusBar style={DARK ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.bg } }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="login" />
@@ -32,6 +33,9 @@ export default function RootLayout() {
         <Stack.Screen name="caixa" options={{ presentation: 'modal' }} />
         <Stack.Screen name="revisao" options={{ presentation: 'modal' }} />
         <Stack.Screen name="assinatura" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="termos" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="privacidade" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="bemvindo" />
       </Stack>
     </SafeAreaProvider>
   );

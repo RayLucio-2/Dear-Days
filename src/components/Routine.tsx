@@ -65,7 +65,7 @@ export function Routine({ kind, dayId, color }: { kind: 'manha' | 'noite'; dayId
           <Row>
             <Ionicons name="add" size={18} color={color} />
             <TextInput value={novo} onChangeText={setNovo} onSubmitEditing={add} blurOnSubmit={false} returnKeyType="done" placeholder="Novo passo"
-              placeholderTextColor="#A39A90" style={st.newIn} accessibilityLabel="Novo passo" />
+              placeholderTextColor={C.placeholder} style={st.newIn} accessibilityLabel="Novo passo" />
           </Row>
           <Btn kind="soft" title="Pronto" onPress={() => setEdit(false)} color={C.ink} style={{ alignSelf: 'flex-start', marginTop: 8 }} />
         </View>

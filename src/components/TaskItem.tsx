@@ -139,7 +139,7 @@ export function TaskItem({ id, i, t, strong, onRepeat, startOpen }: { id: string
           <Row>
             <Ionicons name="add" size={18} color={strong} />
             <TextInput value={novo} onChangeText={setNovo} onSubmitEditing={addSub} blurOnSubmit={false} returnKeyType="done"
-              placeholder="Quebrar em um passo pequeno" placeholderTextColor="#A39A90" style={[st.newSub]} accessibilityLabel="Nova subtarefa" />
+              placeholder="Quebrar em um passo pequeno" placeholderTextColor={C.placeholder} style={[st.newSub]} accessibilityLabel="Nova subtarefa" />
             {novo.trim() ? <IconBtn icon="checkmark" label="Adicionar subtarefa" onPress={addSub} color={strong} /> : null}
           </Row>
 

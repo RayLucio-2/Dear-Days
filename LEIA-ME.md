@@ -153,7 +153,11 @@ Invente uma senha longa para o webhook (por exemplo 30 letras e números mistura
 ```
 npx supabase secrets set ASAAS_ENV=sandbox ASAAS_API_KEY='COLE_A_CHAVE_DO_ASAAS' ASAAS_WEBHOOK_TOKEN='SUA_SENHA_DO_WEBHOOK'
 ```
-Use aspas simples, porque a chave do Asaas começa com `$`.
+Use aspas simples em volta de **nome=valor inteiro**, porque a chave do Asaas começa com `$` (no PowerShell do Windows, sem aspas o `$` some):
+```
+npx supabase secrets set ASAAS_ENV=sandbox 'ASAAS_API_KEY=COLE_A_CHAVE' 'ASAAS_WEBHOOK_TOKEN=SUA_SENHA'
+```
+Mais fácil ainda: Supabase > **Edge Functions > Secrets** (ou Project Settings > Edge Functions) > adicione `ASAAS_ENV`, `ASAAS_API_KEY` e `ASAAS_WEBHOOK_TOKEN` pela tela, sem terminal.
 Para mudar o preço (opcional): `npx supabase secrets set PRECO_MENSAL=14.90 PRECO_ANUAL=119.90`
 
 ### 8.4 Publicar as funções
@@ -191,6 +195,64 @@ Para testar o bloqueio sem esperar 7 dias, no SQL Editor:
 
 ### 8.8 Bloqueio também no servidor (opcional)
 O bloqueio é feito no app. Se quiser que o banco também recuse salvar para quem não assinou, rode as políticas comentadas no fim de `supabase/assinatura.sql`.
+
+## 9. Novidades: o que configurar
+
+O código já está pronto. Algumas partes precisam de um passo seu no Supabase ou em outro serviço.
+
+### 9.1 Publicar as funções novas
+```
+npx supabase functions deploy excluir-conta
+npx supabase functions deploy agenda
+npx supabase functions deploy lembretes --no-verify-jwt
+npx supabase functions deploy resumo-semanal --no-verify-jwt
+```
+- **excluir-conta**: botão "Excluir minha conta" em Conta (cancela a assinatura e apaga tudo).
+- **agenda**: lê o Google Agenda (só leitura) para mostrar os compromissos no Dia.
+
+### 9.2 Lembretes no site (site instalável)
+1. Gere as chaves de notificação (uma vez só):
+   ```
+   npx web-push generate-vapid-keys
+   ```
+2. Invente outra senha longa para os agendamentos (CRON_SECRET) e guarde os segredos:
+   ```
+   npx supabase secrets set 'VAPID_PUBLIC_KEY=CHAVE_PUBLICA' 'VAPID_PRIVATE_KEY=CHAVE_PRIVADA' 'CRON_SECRET=OUTRA_SENHA' 'VAPID_EMAIL=seu@email.com'
+   ```
+3. Supabase > **Database > Extensions**: ligue **pg_cron** e **pg_net**.
+4. Abra `supabase/extras.sql`, troque as duas vezes `TROQUE_PELO_CRON_SECRET` pela mesma senha do passo 2 e rode no SQL Editor.
+5. No site: Conta > Avisos > ligue "Início das tarefas". O navegador pede permissão.
+   - **Android/computador**: funciona direto no Chrome ou Edge.
+   - **iPhone**: primeiro Safari > Compartilhar > **Adicionar à Tela de Início**, abra o Dear Days por esse ícone e ligue os avisos ali (iOS 16.4 ou mais novo).
+
+### 9.3 Resumo semanal por e-mail (Resend)
+1. Crie uma conta em resend.com e gere uma API key.
+2. Para enviar para qualquer pessoa, o Resend pede um **domínio seu** verificado (por exemplo deardays.com.br). Sem domínio, ele só envia para o seu próprio e-mail (bom para testar).
+3. Guarde os segredos:
+   ```
+   npx supabase secrets set 'RESEND_API_KEY=re_...' 'EMAIL_DE=Dear Days <oi@seudominio.com.br>' 'SITE_URL=https://dear-day.netlify.app'
+   ```
+4. O `extras.sql` já agenda o envio para todo domingo às 19h. Quem não usou o planner na semana não recebe. Cada pessoa pode desligar em Conta > Avisos.
+
+### 9.4 E-mails do Supabase em português
+Siga `supabase/templates/LEIA-ME.txt`: em Authentication > Emails, troque o assunto e cole o HTML de cada modelo.
+Dica: o e-mail padrão do Supabase envia poucos e-mails por hora. Para vender, ligue um SMTP próprio em Authentication > Emails > SMTP Settings (o próprio Resend serve: smtp.resend.com, porta 465, usuário "resend", senha = API key).
+
+### 9.5 Termos de uso e Política de privacidade
+Ficam em `/termos` e `/privacidade` no site. **Revise o texto** em `src/lib/legal.ts` e troque os campos entre colchetes (nome, CPF/CNPJ, e-mail de contato).
+
+### 9.6 Outras novidades (não precisam de configuração)
+- **Primeiro acesso guiado**: conta nova vê 3 passos (humor, uma tarefa, o que aparece no Início).
+- **Modo escuro**: Personalizar > Aparência (claro, escuro ou igual ao celular).
+- **Google Agenda**: Conta > Google Agenda, cole o "Endereço secreto no formato iCal". Os compromissos aparecem no Dia, em Tarefas, com um + para virar tarefa.
+- **Site instalável**: ícone do Dear Days, nome e cor na tela inicial do celular.
+- **Prévia de compartilhamento**: o link no WhatsApp mostra a imagem `public/og.png`.
+- **Hábitos em bolinhas**: cada hábito com sua cor e a porcentagem do mês.
+- **Finanças**: sobra prevista, botões + Gasto e + Entrada, contas a pagar com "Marcar paga" e últimos lançamentos.
+- **Sono** e **Lista de compras**: páginas novas em Mais (dá para colocar como aba em Personalizar).
+- **Anotar escrevendo do jeito que fala**: no botão +, "dentista amanhã 15h" vira tarefa e "gastei 32 no mercado" vira gasto. Tudo no aparelho, sem custo.
+- **Potinho do mês**: no Início, cada tarefa, prioridade e hábito feito vira uma bolinha colorida no pote. Nunca esvazia.
+- **Quero parar**: página em Mais para acompanhar algo que quer deixar de fazer (dias sem, próximo marco, dinheiro economizado e recorde). Recomeçar não apaga o recorde.
 
 ## Comandos úteis
 

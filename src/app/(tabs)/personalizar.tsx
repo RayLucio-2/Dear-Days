@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useStore } from '@/lib/store';
 import { today } from '@/lib/dates';
@@ -9,7 +9,7 @@ import {
   CUSTOM_SWATCHES, DEF_FAV, DEF_HOME, DEF_TABS, FAV_VIEWS, HOME_BLOCKS, isHex, listOf, MAX_FAV, MOBILE_TABS, START_OPTS, TAB_VIEWS, THEMES,
 } from '@/lib/prefs';
 import { Btn, Card, H1, IconBtn, Row, Screen, T } from '@/components/ui';
-import { C, F, R } from '@/lib/theme';
+import { C, F, R, setTema, Tema, TEMA } from '@/lib/theme';
 
 /** Personalizar: cor, abas, tela de Início, atalhos e a tela que abre primeiro. Fica em t-cfg (vale no site e no app). */
 export default function Personalizar() {
@@ -36,6 +36,23 @@ export default function Personalizar() {
     <Screen>
       <H1 sub="Dear Days" color={strong}>Personalizar</H1>
       <T muted style={{ marginTop: -6, marginBottom: 14 }}>Suas escolhas ficam salvas na sua conta e valem no site e no celular.</T>
+
+      <Card title="Aparência">
+        <Row style={{ gap: 8, flexWrap: 'wrap' }}>
+          {([['claro', 'Claro', 'sunny-outline'], ['escuro', 'Escuro', 'moon-outline'], ['auto', 'Igual ao celular', 'phone-portrait-outline']] as [Tema, string, any][]).map(([k, n, ic]) => {
+            const on = TEMA === k;
+            return (
+              <Pressable key={k} accessibilityRole="radio" accessibilityState={{ selected: on }}
+                onPress={() => { if (on) return; setTema(k); if (Platform.OS !== 'web') setMsg('Feche e abra o app de novo para trocar a aparência.'); }}
+                style={[st.tema, on && { backgroundColor: strong, borderColor: strong }]}>
+                <Ionicons name={ic} size={16} color={on ? '#fff' : C.muted} />
+                <Text style={[st.temaT, on && { color: '#fff' }]}>{n}</Text>
+              </Pressable>
+            );
+          })}
+        </Row>
+        <T muted small style={{ marginTop: 8 }}>O modo escuro descansa a vista à noite. Vale só neste aparelho.</T>
+      </Card>
 
       <View style={st.cols}>
         <Card title="Cor do planner" style={half}>
@@ -150,6 +167,8 @@ function OrderList({ k, def, options, color, max, mark }: { k: 'tabs' | 'home' |
 }
 
 const st = StyleSheet.create({
+  tema: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: C.line, borderRadius: 999, paddingHorizontal: 14, minHeight: 40, backgroundColor: C.surface },
+  temaT: { fontFamily: F.bodyMed, fontSize: 14, color: C.ink },
   cols: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   sws: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   sw: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1.5, borderColor: C.line, borderRadius: 999, paddingHorizontal: 12, minHeight: 40, backgroundColor: C.surface },

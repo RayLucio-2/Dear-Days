@@ -33,7 +33,7 @@ export default function Caixa() {
       <T muted style={{ marginBottom: 14 }}>O que você anotou no botão +. Organize quando der, por exemplo à noite.</T>
 
       <Row style={{ marginBottom: 14 }}>
-        <TextInput value={txt} onChangeText={setTxt} onSubmitEditing={() => { capture(txt); setTxt(''); }} placeholder="Anotar mais uma coisa" placeholderTextColor="#A39A90"
+        <TextInput value={txt} onChangeText={setTxt} onSubmitEditing={() => { capture(txt); setTxt(''); }} placeholder="Anotar mais uma coisa" placeholderTextColor={C.placeholder}
           style={[ui.input, { backgroundColor: C.surface, borderBottomWidth: 0, borderRadius: 14, paddingHorizontal: 14 }]} returnKeyType="done" blurOnSubmit={false} />
         <Btn title="Guardar" onPress={() => { capture(txt); setTxt(''); }} color={strong} disabled={!txt.trim()} />
       </Row>

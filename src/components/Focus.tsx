@@ -155,7 +155,7 @@ export function Focus({ d, strong, soft, onExit }: { d: Date; strong: string; so
       <View style={st.quick}>
         <Ionicons name="add-circle-outline" size={22} color={strong} />
         <TextInput value={quick} onChangeText={setQuick} onSubmitEditing={addQuick} blurOnSubmit={false} returnKeyType="done"
-          placeholder="Lembrou de algo? Anote aqui" placeholderTextColor="#A39A90" style={st.quickIn} accessibilityLabel="Anotar tarefa rápida" />
+          placeholder="Lembrou de algo? Anote aqui" placeholderTextColor={C.placeholder} style={st.quickIn} accessibilityLabel="Anotar tarefa rápida" />
         {quick.trim() ? <Pressable onPress={addQuick} hitSlop={8} accessibilityLabel="Adicionar"><Ionicons name="arrow-up-circle" size={28} color={strong} /></Pressable> : null}
       </View>
       {day !== key(today()) ? <T muted small style={{ textAlign: 'center', marginTop: 8 }}>Você está vendo outro dia, não hoje.</T> : null}
@@ -189,7 +189,7 @@ const st = StyleSheet.create({
   track: { height: 8, backgroundColor: C.sand, borderRadius: 4, overflow: 'hidden' },
   fill: { height: 8, borderRadius: 4 },
   enL: { fontFamily: F.body, fontSize: 12, color: C.muted, marginRight: 2 },
-  en: { width: 32, height: 28, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.65)', alignItems: 'center', justifyContent: 'center' },
+  en: { width: 32, height: 28, borderRadius: 14, backgroundColor: C.glass, alignItems: 'center', justifyContent: 'center' },
   lowNote: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: C.sand, borderRadius: R.md, padding: 10, marginBottom: 12 },
   lowT: { flex: 1, fontFamily: F.body, fontSize: 13, color: C.ink },
   card: { backgroundColor: C.surface, borderRadius: 28, padding: 26, paddingTop: 22, marginBottom: 14 },
@@ -203,6 +203,6 @@ const st = StyleSheet.create({
   next: { backgroundColor: C.sand, borderRadius: R.md, paddingHorizontal: 14, paddingVertical: 12, marginBottom: 12 },
   nextL: { fontFamily: F.bodyMed, fontSize: 12, color: C.muted },
   nextT: { flex: 1, fontFamily: F.body, fontSize: 14, color: C.ink },
-  quick: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.7)', borderWidth: 0, borderRadius: 999, paddingLeft: 14, paddingRight: 8, minHeight: 50 },
+  quick: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: C.glass, borderWidth: 0, borderRadius: 999, paddingLeft: 14, paddingRight: 8, minHeight: 50 },
   quickIn: { flex: 1, fontFamily: F.body, fontSize: 15, color: C.ink, minHeight: 46 },
 });
