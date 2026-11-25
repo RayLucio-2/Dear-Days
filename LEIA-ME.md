@@ -253,6 +253,7 @@ Ficam em `/termos` e `/privacidade` no site. **Revise o texto** em `src/lib/lega
 - **Anotar escrevendo do jeito que fala**: no botão +, "dentista amanhã 15h" vira tarefa e "gastei 32 no mercado" vira gasto. Tudo no aparelho, sem custo.
 - **Potinho do mês**: no Início, cada tarefa, prioridade e hábito feito vira uma bolinha colorida no pote. Nunca esvazia.
 - **Quero parar**: página em Mais para acompanhar algo que quer deixar de fazer (dias sem, próximo marco, dinheiro economizado e recorde). Recomeçar não apaga o recorde.
+- **Importar extrato e fatura**: em Finanças, "Importar extrato ou fatura do cartão". Lê arquivos OFX e CSV no próprio navegador (nada é enviado), sugere a categoria de cada gasto, deixa desmarcado o pagamento da fatura, transferências, estornos e contas fixas, e não importa o mesmo lançamento duas vezes. PDF ainda não é lido.
 
 ## Comandos úteis
 

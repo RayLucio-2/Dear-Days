@@ -18,8 +18,8 @@ const PISTAS: [number, RegExp][] = [
   [4, /uber|\b99\b|[oô]nibus|gasolina|combust[ií]vel|estacionamento|metr[oô]|passagem|t[aá]xi/i],
   [5, /cinema|show|passeio|\bbar\b|viagem|lazer|ingresso/i],
   [6, /roupa|sapato|t[eê]nis|blusa|cal[çc]a|vestido/i],
-  [7, /farm[aá]cia|rem[eé]dio|drogaria/i],
-  [2, /compra|loja|shopee|amazon|mercado ?livre|shein/i],
+  [7, /farm[aá]cia|rem[eé]dio|drogaria|drogasil|raia|pague menos|panvel|droga/i],
+  [2, /compra|loja|shopee|amazon|mercado ?livre|shein|magazine|magalu|casas bahia|americanas|aliexpress|temu/i],
 ];
 export function categoriaDe(texto: string) {
   const achou = PISTAS.find(([, re]) => re.test(texto));

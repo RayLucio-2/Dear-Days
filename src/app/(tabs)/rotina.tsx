@@ -1,4 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { PACOTES } from '@/lib/modelos';
+import { success } from '@/lib/actions';
 import { useStore } from '@/lib/store';
 import { addDays, DIAS, fromKey, key, today } from '@/lib/dates';
 import { openGcal } from '@/lib/gcal';
@@ -35,6 +38,28 @@ export default function Rotina() {
       <Btn title="Nova tarefa fixa" icon="add" color={strong} style={{ alignSelf: 'flex-start', marginBottom: 14 }}
         onPress={() => push('t-rot', 'r', { id: uid('r'), t: '', time: '', end: '', desc: '', cat: 0, days: [1, 2, 3, 4, 5], from: key(today()) })} />
 
+      <Text style={st.secT}>Modelos de rotina saudável</Text>
+      <T muted small style={{ marginBottom: 10 }}>Toque para adicionar. Depois ajuste horários e dias do seu jeito, ou apague o que não servir.</T>
+      <View style={st.pacotes}>
+        {PACOTES.map((p) => {
+          const ja = p.itens.every((it) => rs.some((r) => r?.t === it.t));
+          return (
+            <Pressable key={p.k} disabled={ja} accessibilityRole="button" accessibilityState={{ disabled: ja }}
+              onPress={() => { p.itens.filter((it) => !rs.some((r) => r?.t === it.t)).forEach((it) => push('t-rot', 'r', { id: uid('r'), t: it.t, time: it.time || '', end: it.end || '', desc: it.desc || '', cat: it.cat || 0, days: it.days, from: key(today()) })); success(); }}
+              style={[st.pacote, { width: wide ? '32%' : '100%' }, ja && { opacity: 0.55 }]}>
+              <Row style={{ gap: 8 }}>
+                <Ionicons name={p.icon as any} size={18} color={strong} />
+                <Text style={st.pacoteN}>{p.n}</Text>
+                <Ionicons name={ja ? 'checkmark-circle' : 'add-circle-outline'} size={20} color={ja ? C.ok : strong} />
+              </Row>
+              <Text style={st.pacoteD}>{p.d}</Text>
+              <Text style={st.pacoteI}>{p.itens.map((it) => `${it.time ? it.time + ' ' : ''}${it.t}`).join('\n')}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {rs.length ? <Text style={[st.secT, { marginTop: 8 }]}>Suas tarefas fixas</Text> : null}
       <View style={st.list}>
         {rs.map((r, i) => {
           if (!r) return null;
@@ -86,6 +111,12 @@ export default function Rotina() {
 }
 
 const st = StyleSheet.create({
+  secT: { fontFamily: F.title, fontSize: 22, color: C.ink, marginBottom: 4 },
+  pacotes: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 10, marginBottom: 20 },
+  pacote: { backgroundColor: C.surface, borderRadius: R.lg, padding: 14, gap: 6 },
+  pacoteN: { flex: 1, fontFamily: F.bodySemi, fontSize: 15, color: C.ink },
+  pacoteD: { fontFamily: F.body, fontSize: 13, color: C.muted, lineHeight: 18 },
+  pacoteI: { fontFamily: F.body, fontSize: 13, color: C.ink, lineHeight: 20 },
   list: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 12 },
   card: { backgroundColor: C.surface, borderRadius: R.lg, borderLeftWidth: 3, padding: 16, gap: 6 },
   tm: { flex: 0, width: 64, textAlign: 'center', minHeight: 34, paddingVertical: 4 },

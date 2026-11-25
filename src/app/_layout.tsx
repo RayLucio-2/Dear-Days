@@ -36,6 +36,7 @@ export default function RootLayout() {
         <Stack.Screen name="termos" options={{ presentation: 'modal' }} />
         <Stack.Screen name="privacidade" options={{ presentation: 'modal' }} />
         <Stack.Screen name="bemvindo" />
+        <Stack.Screen name="importar" options={{ presentation: 'modal' }} />
       </Stack>
     </SafeAreaProvider>
   );

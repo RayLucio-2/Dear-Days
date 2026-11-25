@@ -5,7 +5,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useDoc, useStore } from '@/lib/store';
 import { addDays, DIASL, fromKey, holiday, key, MESES, minutes, pad, today } from '@/lib/dates';
 import { brl, num } from '@/lib/money';
-import { CATS, CATSTRONG, dayInfo, dayQueue, EXER, FOOD, habits, MOODN, monthColor, Rule, rulesFor, Task, uid } from '@/lib/planner';
+import { CATS, CATSTRONG, dayInfo, dayQueue, FOOD, habits, MOODN, monthColor, Rule, rulesFor, Task, uid } from '@/lib/planner';
 import { Btn, DocCheck, Field, Fold, IconBtn, Row, Screen, Section, T, Total, s as ui } from '@/components/ui';
 import { DayNav } from '@/components/DayNav';
 import { EnergyPicker, Focus } from '@/components/Focus';
@@ -13,6 +13,7 @@ import { Routine } from '@/components/Routine';
 import { moveAll, pendingIdx } from '@/lib/actions';
 import { CalEvent, downloadIcs } from '@/lib/gcal';
 import { AgendaDia } from '@/components/AgendaDia';
+import { Exercicio, resumoEx } from '@/components/Exercicio';
 import Svg, { Circle } from 'react-native-svg';
 import { TaskItem } from '@/components/TaskItem';
 import { Cup, Face } from '@/components/art';
@@ -129,17 +130,8 @@ export default function Dia() {
               <View style={{ flex: 1 }}><T muted small>dormi</T><Field doc={id} path="sleep" time /></View>
             </Row>
           </Fold>
-          <Fold id="dia-ex" title="Exercício" icon="walk-outline" color={CATSTRONG[2]} summary={doc.ex || 'não marcado'}>
-            <View style={st.opts}>
-              {EXER.map((e) => {
-                const on = doc.ex === e;
-                return (
-                  <Pressable key={e} onPress={() => set(id, 'ex', on ? '' : e)} style={[st.opt, on && { backgroundColor: strong, borderColor: strong }]} accessibilityRole="button" accessibilityState={{ selected: on }}>
-                    <Text style={[st.optT, on && { color: '#fff' }]}>{e}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+          <Fold id="dia-ex" title="Exercício" icon="walk-outline" color={CATSTRONG[2]} summary={resumoEx(doc)}>
+            <Exercicio id={id} strong={strong} />
           </Fold>
           <Fold id="dia-food" title="Alimentação" icon="restaurant-outline" color={CATSTRONG[3]} summary={`${foodN} de 4 refeições anotadas`} startClosed>
             {FOOD.map(([k, l]) => (

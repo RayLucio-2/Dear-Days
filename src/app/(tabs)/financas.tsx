@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { router } from 'expo-router';
 import { addEntrada, addGasto, historico, pendentes } from '@/lib/fin';
 import { categoriaDe } from '@/lib/fala';
 import { success } from '@/lib/actions';
@@ -50,10 +51,11 @@ export default function Financas() {
         </View>
       </View>
 
-      <Row style={{ gap: 10, marginBottom: 16 }}>
+      <Row style={{ gap: 10, marginBottom: 8 }}>
         <Btn title="Gasto" icon="add" onPress={() => setLanc('gasto')} color={strong} style={{ flex: 1, minHeight: 50 }} />
         <Btn kind="soft" title="Entrada" icon="add" onPress={() => setLanc('entrada')} color={C.ok} style={{ flex: 1, minHeight: 50 }} />
       </Row>
+      <Btn kind="link" title="Importar extrato ou fatura do cartão" icon="document-text-outline" color={C.accent} onPress={() => router.push('/importar')} style={{ alignSelf: 'flex-start', marginBottom: 14 }} />
 
       {pend.length ? (
         <Card title="Contas a pagar" right={pend.length > 4 ? <Btn kind="link" title={todas ? 'ver menos' : `ver todas (${pend.length})`} color={C.accent} onPress={() => setTodas(!todas)} /> : undefined}>

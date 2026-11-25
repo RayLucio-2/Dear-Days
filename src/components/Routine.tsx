@@ -6,16 +6,13 @@ import { success, tap } from '@/lib/actions';
 import { uid } from '@/lib/planner';
 import { Btn, Field, Fold, IconBtn, Row, T } from './ui';
 import { C, F, R } from '@/lib/theme';
+import { ROTINAS } from '@/lib/modelos';
 
 /**
  * Rotina da manhã e da noite: passos em sequência, um de cada vez.
  * Passos em t-rotinas.{manha|noite} = [{ id, t }]; o que foi feito no dia em d-.rot.{id}.
  */
 export type Step = { id: string; t: string };
-const SUGESTAO: Record<'manha' | 'noite', string[]> = {
-  manha: ['Beber um copo de água', 'Arrumar a cama', 'Escovar os dentes', 'Olhar as 3 prioridades de hoje'],
-  noite: ['Esvaziar a caixa de entrada', 'Escolher as prioridades de amanhã', 'Separar a roupa de amanhã', 'Celular longe da cama'],
-};
 
 export function Routine({ kind, dayId, color }: { kind: 'manha' | 'noite'; dayId: string; color: string }) {
   const raw = useStore((s) => s.docs['t-rotinas']?.[kind]);
@@ -47,11 +44,16 @@ export function Routine({ kind, dayId, color }: { kind: 'manha' | 'noite'; dayId
       right={steps.length ? <Text style={st.count}>{n}/{steps.length}</Text> : null}>
       {!steps.length && !edit ? (
         <>
-          <T muted style={{ marginBottom: 10 }}>Uma sequência curta que você faz sem pensar. Comece com 3 ou 4 passos.</T>
-          <Row style={{ gap: 8, flexWrap: 'wrap' }}>
-            <Btn kind="soft" title="Usar sugestão" color={color} onPress={() => set('t-rotinas', kind, SUGESTAO[kind].map((t) => ({ id: uid('s'), t })))} />
-            <Btn kind="link" title="Montar do zero" color={C.accent} onPress={() => setEdit(true)} />
-          </Row>
+          <T muted style={{ marginBottom: 10 }}>Uma sequência curta que você faz sem pensar. Escolha um modelo e ajuste do seu jeito.</T>
+          <View style={{ gap: 8 }}>
+            {ROTINAS[kind].map((m) => (
+              <Pressable key={m.n} onPress={() => set('t-rotinas', kind, m.passos.map((t) => ({ id: uid('s'), t })))} accessibilityRole="button" style={st.modelo}>
+                <Text style={[st.modeloN, { color }]}>{m.n}</Text>
+                <Text style={st.modeloP} numberOfLines={2}>{m.passos.join(' · ')}</Text>
+              </Pressable>
+            ))}
+          </View>
+          <Btn kind="link" title="Montar do zero" color={C.accent} onPress={() => setEdit(true)} style={{ alignSelf: 'flex-start', marginTop: 6 }} />
         </>
       ) : edit ? (
         <View style={{ gap: 4 }}>
@@ -96,6 +98,9 @@ export function Routine({ kind, dayId, color }: { kind: 'manha' | 'noite'; dayId
 
 const st = StyleSheet.create({
   count: { fontFamily: F.bodyMed, fontSize: 13, color: C.muted },
+  modelo: { borderWidth: 1, borderColor: C.line, borderRadius: R.md, padding: 12, backgroundColor: C.bg, gap: 2 },
+  modeloN: { fontFamily: F.bodySemi, fontSize: 14 },
+  modeloP: { fontFamily: F.body, fontSize: 13, color: C.muted, lineHeight: 18 },
   step: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: C.line, borderRadius: R.md, paddingHorizontal: 12, minHeight: 48, backgroundColor: C.bg },
   dot: { width: 26, height: 26, borderRadius: 13, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   dotN: { fontFamily: F.bodySemi, fontSize: 12 },
